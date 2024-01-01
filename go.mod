@@ -3,8 +3,6 @@ module github.com/diezfx/idlegame-backend
 go 1.21
 
 require (
-	github.com/Rhymond/go-money v1.0.10
-	github.com/georgysavva/scany/v2 v2.0.0
 	github.com/gin-contrib/cors v1.5.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/golang-migrate/migrate/v4 v4.17.0
@@ -12,7 +10,6 @@ require (
 	github.com/jackc/pgx/v5 v5.5.1
 	github.com/lestrrat-go/jwx/v2 v2.0.18
 	github.com/rs/zerolog v1.31.0
-	golang.org/x/exp v0.0.0-20231226003508-02704c960a9b
 )
 
 require (
@@ -26,6 +23,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.15.5 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
+	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/jackc/pgerrcode v0.0.0-20220416144525-469b46aa5efa // indirect
