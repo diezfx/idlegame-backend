@@ -17,12 +17,11 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func SetupSplitService() (*http.Server, error) {
+func SetupSplitService(ctx context.Context) (*http.Server, error) {
 	cfg, err := config.Load()
 	if err != nil {
 		return nil, fmt.Errorf("read config: %w", err)
 	}
-	ctx := context.Background()
 	if cfg.Environment == config.LocalEnv {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}

@@ -9,7 +9,6 @@ import (
 	"github.com/diezfx/idlegame-backend/internal/service"
 	"github.com/diezfx/idlegame-backend/pkg/auth"
 	"github.com/diezfx/idlegame-backend/pkg/logger"
-	"github.com/diezfx/idlegame-backend/pkg/middleware"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -25,7 +24,7 @@ func newAPIHandler(projectService ProjectService) *APIHandler {
 func InitAPI(cfg *config.Config, projectService ProjectService) *http.Server {
 	mr := gin.New()
 	mr.Use(gin.Recovery())
-	mr.Use(middleware.HTTPLoggingMiddleware())
+	mr.Use(logger.HTTPLoggingMiddleware())
 	mr.Use(cors.New(cors.Config{
 		AllowMethods:     []string{"GET", "PUT", "PATCH", "POST", "OPTION"},
 		AllowHeaders:     []string{"Origin", "Authorization"},

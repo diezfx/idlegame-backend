@@ -1,4 +1,4 @@
-package middleware
+package logger
 
 import (
 	"bytes"
@@ -6,7 +6,6 @@ import (
 	"io"
 	"time"
 
-	"github.com/diezfx/idlegame-backend/pkg/logger"
 	"github.com/gin-gonic/gin"
 )
 
@@ -32,7 +31,7 @@ func HTTPLoggingMiddleware() gin.HandlerFunc {
 		path := ctx.Request.URL.Path
 		responseBody := capturingWriter.Body()
 
-		log := logger.Info(ctx).
+		log := Info(ctx).
 			String("client_ip", clientIP).
 			String("method", method)
 
