@@ -12,7 +12,8 @@ const (
 var monList = map[int]MonsterDefinition{
 	1: {ID: 1, Name: "schiggo", Type: WaterType},
 	2: {ID: 2, Name: "bisa", Type: EarthType},
-	3: {ID: 3, Name: "glumander", Type: FireType}}
+	3: {ID: 3, Name: "glumander", Type: FireType},
+}
 
 type MonsterDefinition struct {
 	ID   int

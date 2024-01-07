@@ -1,4 +1,3 @@
 package service
 
-type ProjectStorage interface {
-}
+type ProjectStorage interface{}

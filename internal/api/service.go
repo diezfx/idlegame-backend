@@ -1,4 +1,3 @@
 package api
 
-type ProjectService interface {
-}
+type ProjectService interface{}

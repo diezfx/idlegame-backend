@@ -1,49 +1,30 @@
 package storage
 
-import (
-	"database/sql"
+import "time"
 
-	"github.com/google/uuid"
-)
+type MonsterID int
 
-type Transaction struct {
-	ID              uuid.UUID
-	ProjectID       uuid.UUID
-	Name            string
-	TransactionType string
-	Amount          int
-	SourceID        string
-	TargetIDs       []string
+type jobMonster struct {
+	MonsterID int
+	JobID     int
 }
 
-type projectQueryElement struct {
-	ProjectID       sql.NullString
-	ProjectName     sql.NullString
-	TransactionID   sql.NullString
-	TransactionName sql.NullString
-	TransactionType sql.NullString
-	Amount          sql.NullInt64
-	SourceID        sql.NullString
-	TargetID        sql.NullString
+type job struct {
+	ID        int
+	StartedAt time.Time
+	JobType   string
 }
 
-type transactionQueryElement struct {
-	ID              uuid.UUID
-	ProjectID       uuid.UUID
-	Name            string
-	TransactionType string
-	Amount          int
-	SourceID        string
-	TargetID        string
+type WoodCuttingJob struct {
+	ID        int
+	Monster   int
+	TreeType  string
+	StartedAt time.Time
 }
 
-type User struct {
-	ID string
-}
-
-type Project struct {
-	ID           uuid.UUID
-	Name         string
-	Transactions []Transaction
-	Members      []string
+type Job struct {
+	ID        int
+	StartedAt time.Time
+	Monsters  []MonsterID
+	JobType   string
 }

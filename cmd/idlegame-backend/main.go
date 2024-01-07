@@ -12,7 +12,7 @@ func main() {
 	ctx := context.Background()
 	err := godotenv.Load()
 	if err != nil {
-		logger.Fatal(ctx, err).Msg("Error loading .env file")
+		logger.Debug(ctx).Err(err).Msg("Error loading .env file")
 	}
 
 	srv, err := setup.SetupSplitService(ctx)
