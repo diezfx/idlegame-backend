@@ -9,7 +9,8 @@ import (
 
 	"github.com/diezfx/idlegame-backend/internal/api"
 	"github.com/diezfx/idlegame-backend/internal/config"
-	"github.com/diezfx/idlegame-backend/internal/service"
+	"github.com/diezfx/idlegame-backend/internal/service/item"
+	"github.com/diezfx/idlegame-backend/internal/service/jobs"
 	"github.com/diezfx/idlegame-backend/internal/storage"
 	"github.com/diezfx/idlegame-backend/pkg/logger"
 	"github.com/diezfx/idlegame-backend/pkg/postgres"
@@ -33,12 +34,14 @@ func SetupSplitService(ctx context.Context) (*http.Server, error) {
 		return nil, fmt.Errorf("create sqlite client: %w", err)
 	}
 
-	_, err = storage.New(ctx, psqlClient)
+	storageClient, err := storage.New(ctx, psqlClient)
 	if err != nil {
 		return nil, fmt.Errorf("create storage client: %w", err)
 	}
 
-	projectService := service.New()
+	itemContainer := item.NewContainer()
+
+	jobs.New(storageClient, storageClient, itemContainer)
 
 	router := api.InitAPI(&cfg, projectService)
 

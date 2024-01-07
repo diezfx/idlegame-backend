@@ -28,3 +28,10 @@ type Job struct {
 	Monsters  []MonsterID
 	JobType   string
 }
+
+type Monster struct {
+	ID           int
+	Name         string
+	Experience   int
+	MonsterDefID int
+}

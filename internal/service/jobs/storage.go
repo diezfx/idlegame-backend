@@ -4,14 +4,13 @@ import (
 	"context"
 
 	"github.com/diezfx/idlegame-backend/internal/service/monster"
+	"github.com/diezfx/idlegame-backend/internal/storage"
 )
 
 type JobStorage interface {
-	StoreMonsterEntry(ctx context.Context, entry MonsterEntry) error
-	GetMonsterEntry(ctx context.Context, monID int) (*MonsterEntry, error)
-
-	StoreWoodCuttingJob(ctx context.Context, job WoodCuttingJob) error
-	GetWoodCuttingJob(ctx context.Context, id int) (*WoodCuttingJob, error)
+	StoreNewWoodCuttingJob(ctx context.Context, monsterID int, woodType string) (int, error)
+	GetJobByMonster(ctx context.Context, monID int) (*storage.Job, error)
+	GetJobByID(ctx context.Context, id int) (*storage.Job, error)
 }
 
 type MonsterStorage interface {

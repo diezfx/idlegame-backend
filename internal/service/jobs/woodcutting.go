@@ -74,41 +74,47 @@ var woodcuttingJobs = []WoodCuttingJobDefinition{
 	},
 }
 
-func InitWoodCutting(itemContainer *item.ItemContainer) {
+func InitWoodCutting(itemContainer *item.ItemContainer) *WoodCuttingJobContainer {
 	itemContainer.AddItemDefinition(item.ItemDefinition{ID: SpruceType.String(), Tags: []string{}})
 	itemContainer.AddItemDefinition(item.ItemDefinition{ID: BirchType.String(), Tags: []string{}})
 	itemContainer.AddItemDefinition(item.ItemDefinition{ID: PineType.String(), Tags: []string{}})
+
+	return &WoodCuttingJobContainer{
+		defs: woodcuttingJobs,
+	}
 }
 
-func (s *JobService) StartWoodCuttingJob(ctx context.Context, job WoodCuttingJob) error {
+func (s *JobService) StartWoodCuttingJob(ctx context.Context, job WoodCuttingJob) (int, error) {
 	// check if monster is not occupied
-	_, err := s.jobStorage.GetMonsterEntry(ctx, job.Monster)
+	_, err := s.jobStorage.GetJobByMonster(ctx, job.Monster)
 	if err != nil && !errors.Is(err, storage.ErrNotFound) {
-		return fmt.Errorf("get job entry for %s: %w", job.Monster, err)
+		return -1, fmt.Errorf("get job entry for %d: %w", job.Monster, err)
 	}
 	if err == nil {
-		return service.ErrAlreadyStartedJob
+		return -1, service.ErrAlreadyStartedJob
 	}
 
 	// check if requirements are meant
 
 	mon, err := s.monsterStorage.GetMonster(job.Monster)
 	if err != nil {
-		return fmt.Errorf("get monster information for %s: %w", job.Monster, err)
+		return -1, fmt.Errorf("get monster information for %d: %w", job.Monster, err)
 	}
 
 	taskDefinition := s.woodContainer.GetDefinition(job.TreeType)
 	if taskDefinition == nil {
-		return fmt.Errorf("get job definition %s: %w", job.Monster, service.ErrJobTypeNotFound)
+		return -1, fmt.Errorf("get job definition %d: %w", job.Monster, service.ErrJobTypeNotFound)
 	}
 
 	if taskDefinition.LevelRequirement > mon.Level() {
-		return service.ErrJobTypeNotFound
+		return -1, service.ErrJobTypeNotFound
 	}
 
 	// start
 
-	s.jobStorage.StoreMonsterEntry()
-
-	// add entry into monsterJobEntry, add job into job table
+	id, err := s.jobStorage.StoreNewWoodCuttingJob(ctx, job.Monster, job.TreeType.String())
+	if err != nil {
+		return -1, nil
+	}
+	return id, nil
 }
