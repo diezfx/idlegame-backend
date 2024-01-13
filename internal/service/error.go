@@ -7,4 +7,5 @@ var (
 	ErrJobTypeNotFound        = errors.New("jobType was not found")
 	ErrAlreadyStartedJob      = errors.New("another job was already started")
 	ErrLevelRequirementNotMet = errors.New("the level requirement was not met")
+	ErrNotEnoughInventory     = errors.New("not enough inventory")
 )

@@ -19,6 +19,13 @@ docker/build:
 docker/push: docker/build
 	docker push ghcr.io/diezfx/idlegame-backend:latest
 
+docker/up:
+	docker compose up -d
+
+
+migrate/drop:
+	migrate -database "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable" -path ./db/migrations drop
+
 
 
 

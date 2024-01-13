@@ -2,6 +2,8 @@ package api
 
 import (
 	"fmt"
+
+	"github.com/diezfx/idlegame-backend/internal/service/jobs"
 )
 
 type InvalidArgumentError struct {
@@ -19,4 +21,10 @@ func NewInvalidArgumentError(arg string) *InvalidArgumentError {
 type ErrorResponse struct {
 	ErrorCode int
 	Reason    string
+}
+
+type StartWoodCuttingJobRequest struct {
+	UserID   int           `json:"userId"`
+	Monster  int           `json:"monster"`
+	TreeType jobs.TreeType `json:"treeType"`
 }

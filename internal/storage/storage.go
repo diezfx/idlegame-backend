@@ -33,7 +33,7 @@ func (c *Client) withTx(ctx context.Context, fn func(tx *sql.Tx) error) error {
 	}
 	defer func() {
 		if v := recover(); v != nil {
-			tx.Rollback()
+			_ = tx.Rollback()
 			panic(v)
 		}
 	}()

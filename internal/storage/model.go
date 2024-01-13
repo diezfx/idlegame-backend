@@ -2,8 +2,6 @@ package storage
 
 import "time"
 
-type MonsterID int
-
 type jobMonster struct {
 	MonsterID int
 	JobID     int
@@ -13,11 +11,12 @@ type job struct {
 	ID        int
 	StartedAt time.Time
 	JobType   string
+	UserID    int
 }
 
 type WoodCuttingJob struct {
 	ID        int
-	Monster   int
+	MonsterID int
 	TreeType  string
 	StartedAt time.Time
 }
@@ -25,7 +24,7 @@ type WoodCuttingJob struct {
 type Job struct {
 	ID        int
 	StartedAt time.Time
-	Monsters  []MonsterID
+	Monsters  []int
 	JobType   string
 }
 
@@ -34,4 +33,10 @@ type Monster struct {
 	Name         string
 	Experience   int
 	MonsterDefID int
+}
+
+type InventoryEntry struct {
+	Quantity  int
+	UserID    int
+	ItemDefID string
 }

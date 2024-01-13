@@ -28,15 +28,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	/*
-		id, err := store.StoreNewWoodCuttingJob(ctx, 2, "wood")
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		fmt.Println("insert id", id)
-	*/
-
 	res, err := store.GetJobByMonster(ctx, 2)
 	if err != nil {
 		log.Fatal(err)

@@ -2,7 +2,9 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/diezfx/idlegame-backend/internal/config"
@@ -14,14 +16,15 @@ import (
 )
 
 type APIHandler struct {
-	projectService ProjectService
+	jobService       JobService
+	inventoryService InventoryService
 }
 
-func newAPIHandler(projectService ProjectService) *APIHandler {
-	return &APIHandler{projectService: projectService}
+func newAPIHandler(jobService JobService, inventoryService InventoryService) *APIHandler {
+	return &APIHandler{jobService: jobService, inventoryService: inventoryService}
 }
 
-func InitAPI(cfg *config.Config, projectService ProjectService) *http.Server {
+func InitAPI(cfg *config.Config, jobService JobService, inventoryService InventoryService) *http.Server {
 	mr := gin.New()
 	mr.Use(gin.Recovery())
 	mr.Use(logger.HTTPLoggingMiddleware())
@@ -37,9 +40,15 @@ func InitAPI(cfg *config.Config, projectService ProjectService) *http.Server {
 	if !cfg.IsLocal() {
 		r.Use(auth.AuthMiddleware(cfg.Auth))
 	}
-	_ = newAPIHandler(projectService)
-	// r.GET("projects/:id", apiHandler.getProjectByIDHandler)
 
+	// jobHandlers
+	api := newAPIHandler(jobService, inventoryService)
+
+	r.GET("/jobs/:id", api.GetJob)
+	r.POST("/jobs/woodcutting", api.PostWoodcuttingJob)
+	r.GET("/jobs/woodcutting/:id", api.GetWoodcuttingJob)
+	r.DELETE("/jobs/woodcutting/:id", api.DeleteWoodcuttingJob)
+	r.GET("/inventory/:userID", api.GetInventory)
 	return &http.Server{
 		Handler: mr,
 		Addr:    "localhost:5002",
@@ -70,4 +79,83 @@ func handleError(ctx *gin.Context, err error) {
 			Reason:    "unexpected",
 		})
 	}
+}
+
+// postwoodcuttingjob
+func (api *APIHandler) PostWoodcuttingJob(ctx *gin.Context) {
+	var req StartWoodCuttingJobRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		handleError(ctx, errInvalidInput)
+		return
+	}
+	resp, err := api.jobService.StartWoodCuttingJob(ctx, req.UserID, req.Monster, req.TreeType)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+	// resource created
+	// set header to url with id
+	ctx.Header("Location", fmt.Sprintf("/api/v1.0/jobs/woodcutting/%d", resp))
+	ctx.JSON(http.StatusCreated, resp)
+}
+
+func (api *APIHandler) GetWoodcuttingJob(ctx *gin.Context) {
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if idStr == "" || err != nil {
+		handleError(ctx, errInvalidInput)
+		return
+	}
+	resp, err := api.jobService.GetWoodcuttingJob(ctx, id)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+	ctx.JSON(http.StatusOK, resp)
+}
+
+func (api *APIHandler) GetJob(ctx *gin.Context) {
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if idStr == "" || err != nil {
+		handleError(ctx, errInvalidInput)
+		return
+	}
+
+	resp, err := api.jobService.GetJob(ctx, id)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+	ctx.JSON(http.StatusOK, resp)
+}
+
+func (api *APIHandler) DeleteWoodcuttingJob(ctx *gin.Context) {
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if idStr == "" || err != nil {
+		handleError(ctx, errInvalidInput)
+		return
+	}
+	err = api.jobService.StopWoodCuttingJob(ctx, id)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+	ctx.Status(http.StatusNoContent)
+}
+
+func (api *APIHandler) GetInventory(ctx *gin.Context) {
+	userIDStr := ctx.Param("userID")
+	userID, err := strconv.Atoi(userIDStr)
+	if userIDStr == "" || err != nil {
+		handleError(ctx, errInvalidInput)
+		return
+	}
+	resp, err := api.inventoryService.GetInventory(ctx, userID)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+	ctx.JSON(http.StatusOK, resp)
 }

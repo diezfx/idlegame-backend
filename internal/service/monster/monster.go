@@ -1,5 +1,7 @@
 package monster
 
+import "github.com/diezfx/idlegame-backend/internal/storage"
+
 type MonsterType string
 
 const (
@@ -39,6 +41,7 @@ func (m *Monster) AddExperience(exp int) {
 	m.Experience += exp
 }
 
+//nolint:gomnd // fine for level
 func (m *Monster) Level() int {
 	if m.Experience < 100 {
 		return 1
@@ -57,4 +60,12 @@ func (m *Monster) Level() int {
 
 func (m *Monster) Type() MonsterType {
 	return monList[m.MonsterDefID].Type
+}
+
+func MonsterFromStorage(m *storage.Monster) *Monster {
+	return &Monster{
+		ID:           m.ID,
+		MonsterDefID: m.MonsterDefID,
+		Experience:   m.Experience,
+	}
 }

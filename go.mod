@@ -10,7 +10,7 @@ require (
 	github.com/google/uuid v1.5.0
 	github.com/jackc/pgx/v5 v5.5.1
 	github.com/joho/godotenv v1.5.1
-	github.com/lestrrat-go/jwx/v2 v2.0.18
+	github.com/lestrrat-go/jwx/v2 v2.0.19
 	github.com/rs/zerolog v1.31.0
 )
 

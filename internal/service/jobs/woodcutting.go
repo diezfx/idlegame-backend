@@ -8,34 +8,9 @@ import (
 
 	"github.com/diezfx/idlegame-backend/internal/service"
 	"github.com/diezfx/idlegame-backend/internal/service/item"
+	"github.com/diezfx/idlegame-backend/internal/service/monster"
 	"github.com/diezfx/idlegame-backend/internal/storage"
 )
-
-// what kind of wood
-type TreeType string
-
-const (
-	SpruceType TreeType = "Spruce"
-	BirchType  TreeType = "Birch"
-	PineType   TreeType = "Pine"
-)
-
-func (t TreeType) String() string {
-	return string(t)
-}
-
-type WoodCuttingJob struct {
-	ID       int
-	Monster  int
-	TreeType TreeType
-}
-
-// different tree types have
-// level requirements, durations, exp gains
-
-type WoodCuttingJobContainer struct {
-	defs []WoodCuttingJobDefinition
-}
 
 func (c *WoodCuttingJobContainer) GetDefinition(treeType TreeType) *WoodCuttingJobDefinition {
 	for _, def := range c.defs {
@@ -84,11 +59,11 @@ func InitWoodCutting(itemContainer *item.ItemContainer) *WoodCuttingJobContainer
 	}
 }
 
-func (s *JobService) StartWoodCuttingJob(ctx context.Context, job WoodCuttingJob) (int, error) {
+func (s *JobService) StartWoodCuttingJob(ctx context.Context, userID, monsterID int, treeType TreeType) (int, error) {
 	// check if monster is not occupied
-	_, err := s.jobStorage.GetJobByMonster(ctx, job.Monster)
+	_, err := s.jobStorage.GetJobByMonster(ctx, monsterID)
 	if err != nil && !errors.Is(err, storage.ErrNotFound) {
-		return -1, fmt.Errorf("get job entry for %d: %w", job.Monster, err)
+		return -1, fmt.Errorf("get job entry for %d: %w", monsterID, err)
 	}
 	if err == nil {
 		return -1, service.ErrAlreadyStartedJob
@@ -96,14 +71,15 @@ func (s *JobService) StartWoodCuttingJob(ctx context.Context, job WoodCuttingJob
 
 	// check if requirements are meant
 
-	mon, err := s.monsterStorage.GetMonster(job.Monster)
+	storeMon, err := s.monsterStorage.GetMonsterByID(ctx, monsterID)
 	if err != nil {
-		return -1, fmt.Errorf("get monster information for %d: %w", job.Monster, err)
+		return -1, fmt.Errorf("get monster information for monsterID %d: %w", monsterID, err)
 	}
+	mon := monster.MonsterFromStorage(storeMon)
 
-	taskDefinition := s.woodContainer.GetDefinition(job.TreeType)
+	taskDefinition := s.woodContainer.GetDefinition(treeType)
 	if taskDefinition == nil {
-		return -1, fmt.Errorf("get job definition %d: %w", job.Monster, service.ErrJobTypeNotFound)
+		return -1, fmt.Errorf("get job definition %d: %w", monsterID, service.ErrJobTypeNotFound)
 	}
 
 	if taskDefinition.LevelRequirement > mon.Level() {
@@ -112,9 +88,37 @@ func (s *JobService) StartWoodCuttingJob(ctx context.Context, job WoodCuttingJob
 
 	// start
 
-	id, err := s.jobStorage.StoreNewWoodCuttingJob(ctx, job.Monster, job.TreeType.String())
+	id, err := s.jobStorage.StoreNewWoodCuttingJob(ctx, userID, monsterID, treeType.String())
 	if err != nil {
-		return -1, nil
+		return -1, err
 	}
 	return id, nil
+}
+
+//getJob
+
+func (s *JobService) GetWoodcuttingJob(ctx context.Context, id int) (*WoodCuttingJob, error) {
+	job, err := s.jobStorage.GetWoodcuttingJobByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("get job entry for jobID %d: %w", id, err)
+	}
+	return FromWoodcuttingJob(job), nil
+}
+
+func (s *JobService) StopWoodCuttingJob(ctx context.Context, id int) error {
+	// check if job exists
+	job, err := s.jobStorage.GetJobByID(ctx, id)
+	if err != nil && !errors.Is(err, storage.ErrNotFound) {
+		return fmt.Errorf("get job entry for jobID %d: %w", job.ID, err)
+	}
+	if err != nil {
+		return fmt.Errorf("get job entry for jobID %d: %w", id, err)
+	}
+
+	// remove job
+	err = s.jobStorage.DeleteWoodCuttingJob(ctx, id)
+	if err != nil {
+		return fmt.Errorf("delete job entry for jobID %d: %w", id, err)
+	}
+	return nil
 }

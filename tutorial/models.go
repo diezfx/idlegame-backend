@@ -70,7 +70,7 @@ type ProjectMembership struct {
 type Transaction struct {
 	ID              uuid.UUID
 	Name            string
-	Amount          int32
+	Quantity          int32
 	SourceID        string
 	TransactionType TransactionType
 }
