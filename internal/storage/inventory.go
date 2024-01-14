@@ -45,6 +45,30 @@ func (s *Client) AddItem(ctx context.Context, userID int, itemID string, quantit
 	return newQuantity, nil
 }
 
+func (s *Client) AddItems(ctx context.Context, items []InventoryEntry) error {
+
+	const addItemQuery = `
+	INSERT INTO inventory_items
+	(user_id, item_def_id, quantity)
+	VALUES
+	($1, $2, $3)
+	ON CONFLICT (user_id, item_def_id) DO UPDATE
+	SET quantity = inventory_items.quantity + $3
+	RETURNING quantity
+	`
+
+	return s.withTx(ctx, func(tx *sql.Tx) error {
+		var newQuantity int
+		for _, item := range items {
+			err := tx.QueryRowContext(ctx, addItemQuery, item.UserID, item.ItemDefID, item.Quantity).Scan(&newQuantity)
+			if err != nil {
+				return fmt.Errorf("add item %s: %w", item.ItemDefID, err)
+			}
+		}
+		return nil
+	})
+}
+
 func (s *Client) GetInventory(ctx context.Context, userID int) ([]InventoryEntry, error) {
 	var res []InventoryEntry
 	const getInventoryQuery = `

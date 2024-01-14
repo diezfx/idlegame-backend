@@ -3,13 +3,14 @@ CREATE TABLE users(
     id SERIAL PRIMARY KEY,
     username TEXT NOT NULL,
     external_id TEXT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE jobs(
         id SERIAL PRIMARY KEY,
         user_id integer NOT NULL,
-        started_at TIMESTAMP NOT NULL,
+        started_at TIMESTAMPTZ NOT NULL,
+        updated_at TIMESTAMPTZ NOT NULL,
         job_type TEXT NOT NULL,
 
         CONSTRAINT fk_user

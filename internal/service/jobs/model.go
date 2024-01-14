@@ -3,6 +3,7 @@ package jobs
 import (
 	"time"
 
+	"github.com/diezfx/idlegame-backend/internal/service/inventory"
 	"github.com/diezfx/idlegame-backend/internal/storage"
 )
 
@@ -22,10 +23,8 @@ func (t TreeType) String() string {
 }
 
 type WoodCuttingJob struct {
-	ID        int       `json:"id"`
-	Monster   int       `json:"monster"`
-	TreeType  TreeType  `json:"treeType"`
-	StartedAt time.Time `json:"startedAt"`
+	Job
+	TreeType TreeType `json:"treeType"`
 }
 
 type WoodCuttingJobContainer struct {
@@ -41,16 +40,28 @@ const (
 
 type Job struct {
 	ID        int
+	UserID    int
 	StartedAt time.Time
+	UpdatedAt time.Time
 	Monsters  []int
 	JobType   string
 }
 
 func FromWoodcuttingJob(j *storage.WoodCuttingJob) *WoodCuttingJob {
 	return &WoodCuttingJob{
-		ID:        j.ID,
-		Monster:   j.MonsterID,
-		TreeType:  TreeType(j.TreeType),
-		StartedAt: j.StartedAt,
+		Job: Job{
+			ID:        j.ID,
+			UserID:    j.UserID,
+			StartedAt: j.StartedAt,
+			Monsters:  j.Monsters,
+			JobType:   WoodCuttingJobType.String(),
+			UpdatedAt: j.UpdatedAt,
+		},
+		TreeType: TreeType(j.TreeType),
 	}
+}
+
+type Reward struct {
+	Items []inventory.Item
+	Exp   int
 }

@@ -3,6 +3,7 @@ CREATE TABLE jobs(
         id SERIAL PRIMARY KEY,
         started_at TIMESTAMP NOT NULL,
         job_type TEXT
+        updated_at TIMESTAMP NOT NULL,
 );
 
 CREATE TABLE job_monsters (

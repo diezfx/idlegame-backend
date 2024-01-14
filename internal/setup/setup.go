@@ -19,10 +19,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func SetupSplitService(ctx context.Context) (*http.Server, error) {
+func SetupSplitService(ctx context.Context) (*http.Server, *jobs.Daemon, error) {
 	cfg, err := config.Load()
 	if err != nil {
-		return nil, fmt.Errorf("read config: %w", err)
+		return nil, nil, fmt.Errorf("read config: %w", err)
 	}
 	if cfg.Environment == config.LocalEnv {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
@@ -32,18 +32,20 @@ func SetupSplitService(ctx context.Context) (*http.Server, error) {
 
 	psqlClient, err := postgres.New(cfg.DB)
 	if err != nil {
-		return nil, fmt.Errorf("create sqlite client: %w", err)
+		return nil, nil, fmt.Errorf("create sqlite client: %w", err)
 	}
 
 	storageClient, err := storage.New(ctx, psqlClient)
 	if err != nil {
-		return nil, fmt.Errorf("create storage client: %w", err)
+		return nil, nil, fmt.Errorf("create storage client: %w", err)
 	}
 
 	itemContainer := item.NewContainer()
 
-	jobService := jobs.New(storageClient, storageClient, itemContainer)
+	jobService := jobs.New(storageClient, storageClient, storageClient, itemContainer)
 	inventoryService := inventory.New(storageClient)
+
+	jobDaemon := jobs.NewDaemon(jobService)
 
 	router := api.InitAPI(&cfg, jobService, inventoryService)
 
@@ -55,5 +57,5 @@ func SetupSplitService(ctx context.Context) (*http.Server, error) {
 		ReadTimeout:  15 * time.Second,
 	}
 
-	return srv, nil
+	return srv, jobDaemon, nil
 }

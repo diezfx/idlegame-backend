@@ -15,10 +15,17 @@ func main() {
 		logger.Debug(ctx).Err(err).Msg("Error loading .env file")
 	}
 
-	srv, err := setup.SetupSplitService(ctx)
+	srv, daemon, err := setup.SetupSplitService(ctx)
 	if err != nil {
-		logger.Fatal(context.Background(), err).Msg("failed setup")
+		logger.Fatal(ctx, err).Msg("failed setup")
 	}
+
+	go func() {
+		err := daemon.Run(ctx)
+		if err != nil {
+			logger.Fatal(ctx, err).Msg("failed daemon")
+		}
+	}()
 
 	err = srv.ListenAndServe()
 	if err != nil {

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/diezfx/idlegame-backend/internal/service"
+	"github.com/diezfx/idlegame-backend/internal/service/inventory"
 	"github.com/diezfx/idlegame-backend/internal/service/item"
 	"github.com/diezfx/idlegame-backend/internal/service/monster"
 	"github.com/diezfx/idlegame-backend/internal/storage"
@@ -23,29 +24,44 @@ func (c *WoodCuttingJobContainer) GetDefinition(treeType TreeType) *WoodCuttingJ
 
 type WoodCuttingJobDefinition struct {
 	JobType          TreeType
-	ExpGain          int
 	LevelRequirement int
 	Duration         time.Duration
+	Rewards          Reward
 }
 
 var woodcuttingJobs = []WoodCuttingJobDefinition{
 	{
-		ExpGain:          1,
 		JobType:          SpruceType,
 		LevelRequirement: 1,
-		Duration:         time.Second,
+		Duration:         time.Second * 3,
+		Rewards: Reward{
+			Items: []inventory.Item{
+				{ItemDefID: SpruceType.String(), Quantity: 1},
+			},
+			Exp: 1,
+		},
 	},
 	{
-		ExpGain:          2,
 		JobType:          BirchType,
 		LevelRequirement: 2,
 		Duration:         time.Second * 3,
+		Rewards: Reward{
+			Items: []inventory.Item{
+				{ItemDefID: BirchType.String(), Quantity: 1},
+			},
+			Exp: 2,
+		},
 	},
 	{
-		ExpGain:          3,
 		JobType:          PineType,
 		LevelRequirement: 3,
 		Duration:         time.Second * 3,
+		Rewards: Reward{
+			Items: []inventory.Item{
+				{ItemDefID: PineType.String(), Quantity: 1},
+			},
+			Exp: 3,
+		},
 	},
 }
 
@@ -121,4 +137,72 @@ func (s *JobService) StopWoodCuttingJob(ctx context.Context, id int) error {
 		return fmt.Errorf("delete job entry for jobID %d: %w", id, err)
 	}
 	return nil
+}
+
+func (s *JobService) UpdateWoodcuttingJob(ctx context.Context, id int) error {
+	// check if job exists
+	job, err := s.GetWoodcuttingJob(ctx, id)
+	if err != nil {
+		return fmt.Errorf("get job entry for jobID %d: %w", id, err)
+	}
+	now := time.Now()
+	jobDefintion := s.woodContainer.GetDefinition(job.TreeType)
+	diff := job.UpdatedAt.Sub(job.StartedAt)
+	steps := diff / jobDefintion.Duration // the ticks from the beginning
+
+	executionCount := 0
+	for nextTick := job.StartedAt.Add(jobDefintion.Duration * steps); nextTick.Before(now); nextTick = nextTick.Add(jobDefintion.Duration) {
+		if nextTick.After(job.UpdatedAt) {
+			executionCount++
+		}
+	}
+	if executionCount == 0 {
+		return nil
+	}
+
+	rewards := calculateRewards(jobDefintion.Rewards, executionCount)
+
+	err = s.inventoryStorage.AddItems(ctx, toInventoryEntries(job.UserID, rewards.Items))
+	if err != nil {
+		return fmt.Errorf("add items for userID %d: %w", job.UserID, err)
+	}
+
+	_, err = s.monsterStorage.AddMonsterExperience(ctx, job.Monsters[0], rewards.Exp)
+	if err != nil {
+		return fmt.Errorf("add exp for userID %d: %w", job.UserID, err)
+	}
+
+	err = s.jobStorage.UpdateJobUpdatedAt(ctx, id, now)
+	if err != nil {
+		return fmt.Errorf("update job entry for jobID %d: %w", id, err)
+	}
+	return nil
+
+}
+
+func toInventoryEntries(userId int, item []inventory.Item) []storage.InventoryEntry {
+	entries := []storage.InventoryEntry{}
+	for _, i := range item {
+		entries = append(entries, storage.InventoryEntry{
+			UserID:    userId,
+			ItemDefID: i.ItemDefID,
+			Quantity:  i.Quantity,
+		})
+	}
+	return entries
+}
+
+func calculateRewards(rewards Reward, executionCount int) Reward {
+
+	var rewardItems = []inventory.Item{}
+	for _, item := range rewards.Items {
+		rewardItems = append(rewardItems, inventory.Item{
+			Quantity:  item.Quantity * executionCount,
+			ItemDefID: item.ItemDefID,
+		})
+	}
+	return Reward{
+		Items: rewardItems,
+		Exp:   rewards.Exp * executionCount,
+	}
 }

@@ -10,20 +10,21 @@ type jobMonster struct {
 type job struct {
 	ID        int
 	StartedAt time.Time
+	UpdatedAt time.Time
 	JobType   string
 	UserID    int
 }
 
 type WoodCuttingJob struct {
-	ID        int
-	MonsterID int
-	TreeType  string
-	StartedAt time.Time
+	Job
+	TreeType string
 }
 
 type Job struct {
 	ID        int
+	UserID    int
 	StartedAt time.Time
+	UpdatedAt time.Time
 	Monsters  []int
 	JobType   string
 }

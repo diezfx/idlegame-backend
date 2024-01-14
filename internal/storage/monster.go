@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/diezfx/idlegame-backend/pkg/logger"
 	"github.com/georgysavva/scany/sqlscan"
 )
 
@@ -65,5 +66,6 @@ func (c *Client) AddMonsterExperience(ctx context.Context, monID, additionalExp 
 	if err != nil {
 		return 0, fmt.Errorf("execute transaction: %w", err)
 	}
+	logger.Debug(ctx).Any("exp", currentExp).Msg("added experience")
 	return currentExp, nil
 }
