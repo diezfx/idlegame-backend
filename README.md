@@ -68,3 +68,11 @@ migrate create -dir db/migrations -ext sql -seq -digits 4 {name}
 - battles for cities
 - market place
 - chat based on matrix
+
+
+
+
+## Next steps
+- multiple jobs
+- complex jobs with item consumption and cancellation
+- elements to monsters and talents
