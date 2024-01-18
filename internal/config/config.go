@@ -7,7 +7,7 @@ import (
 	supabasecfg "github.com/diezfx/idlegame-backend/internal/config/supabase"
 	"github.com/diezfx/idlegame-backend/pkg/auth"
 	"github.com/diezfx/idlegame-backend/pkg/configloader"
-	"github.com/diezfx/idlegame-backend/pkg/postgres"
+	"github.com/diezfx/idlegame-backend/pkg/db"
 )
 
 type Environment string
@@ -22,7 +22,7 @@ type Config struct {
 	Environment Environment
 	LogLevel    string
 	Auth        auth.Config
-	DB          postgres.Config
+	DB          db.Config
 }
 
 func Load() (Config, error) {
@@ -57,7 +57,7 @@ func Load() (Config, error) {
 		Addr:        "localhost:5002",
 		Environment: LocalEnv,
 		LogLevel:    "debug",
-		DB: postgres.Config{
+		DB: db.Config{
 			Port: 5432, Host: "localhost", Database: "postgres",
 			Username: "postgres", Password: "postgres",
 			MigrationsDir: "db/migrations",

@@ -5,13 +5,13 @@ import (
 	"fmt"
 
 	"github.com/diezfx/idlegame-backend/pkg/configloader"
-	"github.com/diezfx/idlegame-backend/pkg/postgres"
+	"github.com/diezfx/idlegame-backend/pkg/db"
 )
 
 const defaultNamespace = "postgres"
 
-func LoadPostgresConfig(loader *configloader.Loader) (postgres.Config, error) {
-	cfg := postgres.Config{}
+func LoadPostgresConfig(loader *configloader.Loader) (db.Config, error) {
+	cfg := db.Config{}
 
 	content, err := loader.LoadConfig(defaultNamespace)
 	if err != nil {

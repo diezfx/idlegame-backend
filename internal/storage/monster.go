@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/diezfx/idlegame-backend/pkg/db"
 	"github.com/diezfx/idlegame-backend/pkg/logger"
-	"github.com/georgysavva/scany/sqlscan"
 )
 
 func (c *Client) GetMonsterByID(ctx context.Context, id int) (*Monster, error) {
@@ -17,7 +17,7 @@ func (c *Client) GetMonsterByID(ctx context.Context, id int) (*Monster, error) {
 	`
 	var monster Monster
 
-	err := sqlscan.Get(ctx, c.conn, &monster, getMonsterQuery, id)
+	err := c.dbClient.Get(ctx, &monster, getMonsterQuery, id)
 
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
@@ -35,8 +35,8 @@ func (c *Client) AddMonster(ctx context.Context, mon Monster) (*Monster, error) 
 	VALUES($1,$2,$3)
 	RETURNING id
 	`
-	err := c.withTx(ctx, func(tx *sql.Tx) error {
-		err := tx.QueryRowContext(ctx, addMonsterQuery, mon.Name, mon.Experience, mon.MonsterDefID).Scan(&mon.ID)
+	err := c.dbClient.WithTx(ctx, func(tx db.Querier) error {
+		err := tx.Get(ctx, &mon.ID, addMonsterQuery, mon.Name, mon.Experience, mon.MonsterDefID)
 		if err != nil {
 			return fmt.Errorf("insert monster: %w", err)
 		}
@@ -56,8 +56,8 @@ func (c *Client) AddMonsterExperience(ctx context.Context, monID, additionalExp 
 	WHERE id=$2
 	RETURNING experience
 	`
-	err := c.withTx(ctx, func(tx *sql.Tx) error {
-		err := tx.QueryRowContext(ctx, addMonsterExperienceQuery, additionalExp, monID).Scan(&currentExp)
+	err := c.dbClient.WithTx(ctx, func(tx db.Querier) error {
+		err := tx.Get(ctx, &currentExp, addMonsterExperienceQuery, additionalExp, monID)
 		if err != nil {
 			return fmt.Errorf("add experience: %w", err)
 		}

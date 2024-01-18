@@ -14,8 +14,8 @@ import (
 	"github.com/diezfx/idlegame-backend/internal/service/jobs"
 	"github.com/diezfx/idlegame-backend/internal/service/monster"
 	"github.com/diezfx/idlegame-backend/internal/storage"
+	"github.com/diezfx/idlegame-backend/pkg/db"
 	"github.com/diezfx/idlegame-backend/pkg/logger"
-	"github.com/diezfx/idlegame-backend/pkg/postgres"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -31,7 +31,7 @@ func SetupSplitService(ctx context.Context) (*http.Server, *jobs.Daemon, error) 
 
 	logger.Info(ctx).String("config", fmt.Sprint(cfg)).Msg("Loaded config")
 
-	psqlClient, err := postgres.New(cfg.DB)
+	psqlClient, err := db.New(cfg.DB)
 	if err != nil {
 		return nil, nil, fmt.Errorf("create sqlite client: %w", err)
 	}

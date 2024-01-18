@@ -2,23 +2,22 @@ package storage
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"time"
 
-	"github.com/georgysavva/scany/sqlscan"
+	"github.com/diezfx/idlegame-backend/pkg/db"
 )
 
 func (c *Client) StoreNewWoodCuttingJob(ctx context.Context, userID, monsterID int, woodType string) (int, error) {
 	var jobID int
 
-	err := c.withTx(ctx, func(tx *sql.Tx) error {
+	err := c.dbClient.WithTx(ctx, func(tx db.Querier) error {
 		const insertJobQuery = `
 		INSERT INTO jobs(user_id,started_at,updated_at,job_type)
 		values($1,$2,$2,$3)
 		RETURNING id`
 
-		err := tx.QueryRowContext(ctx, insertJobQuery, userID, time.Now(), "WoodCutting").Scan(&jobID)
+		err := tx.Get(ctx, &jobID, insertJobQuery, userID, time.Now(), "WoodCutting")
 		if err != nil {
 			return fmt.Errorf("insert job: %w", err)
 		}
@@ -26,7 +25,7 @@ func (c *Client) StoreNewWoodCuttingJob(ctx context.Context, userID, monsterID i
 		const insertMonsterQuery = `
 		INSERT INTO job_monsters (job_id, monster_id)
 		values($1,$2)`
-		_, err = tx.ExecContext(ctx, insertMonsterQuery, jobID, monsterID)
+		_, err = tx.Exec(ctx, insertMonsterQuery, jobID, monsterID)
 		if err != nil {
 			return fmt.Errorf("insert job_monster: %w", err)
 		}
@@ -34,7 +33,7 @@ func (c *Client) StoreNewWoodCuttingJob(ctx context.Context, userID, monsterID i
 		const insertWoodQuery = `
 		INSERT INTO woodcutting_jobs(job_id,tree_type)
 		values($1,$2)`
-		_, err = tx.ExecContext(ctx, insertWoodQuery, jobID, woodType)
+		_, err = tx.Exec(ctx, insertWoodQuery, jobID, woodType)
 		if err != nil {
 			return err
 		}
@@ -47,12 +46,12 @@ func (c *Client) StoreNewWoodCuttingJob(ctx context.Context, userID, monsterID i
 }
 
 func (c *Client) DeleteWoodCuttingJob(ctx context.Context, jobID int) error {
-	err := c.withTx(ctx, func(tx *sql.Tx) error {
+	err := c.dbClient.WithTx(ctx, func(tx db.Querier) error {
 		const deleteMonsterEntriesQuery = `
 		DELETE FROM job_monsters
 		WHERE job_id=$1
 		`
-		_, err := tx.ExecContext(ctx, deleteMonsterEntriesQuery, jobID)
+		_, err := tx.Exec(ctx, deleteMonsterEntriesQuery, jobID)
 		if err != nil {
 			return err
 		}
@@ -61,7 +60,7 @@ func (c *Client) DeleteWoodCuttingJob(ctx context.Context, jobID int) error {
 		DELETE FROM woodcutting_jobs
 		WHERE job_id=$1
 		`
-		_, err = tx.ExecContext(ctx, deleteWoodCuttingJobQuery, jobID)
+		_, err = tx.Exec(ctx, deleteWoodCuttingJobQuery, jobID)
 		if err != nil {
 			return err
 		}
@@ -70,7 +69,7 @@ func (c *Client) DeleteWoodCuttingJob(ctx context.Context, jobID int) error {
 		DELETE FROM jobs
 		WHERE id=$1
 		`
-		_, err = tx.ExecContext(ctx, deleteJobQuery, jobID)
+		_, err = tx.Exec(ctx, deleteJobQuery, jobID)
 		if err != nil {
 			return err
 		}
@@ -88,7 +87,7 @@ func (c *Client) UpdateJobUpdatedAt(ctx context.Context, id int, updatedAt time.
 	SET updated_at=$1
 	WHERE id=$2
 	`
-	_, err := c.conn.ExecContext(ctx, updateJobQuery, updatedAt, id)
+	_, err := c.dbClient.Exec(ctx, updateJobQuery, updatedAt, id)
 	if err != nil {
 		return fmt.Errorf("update job: %w", err)
 	}
@@ -104,7 +103,7 @@ func (c *Client) GetJobByMonster(ctx context.Context, monID int) (*Job, error) {
 	WHERE m.monster_id=$1`
 
 	var res []getJobsQueryResult
-	err := sqlscan.Select(ctx, c.conn.DB, &res, getJobByMonsterQuery, monID)
+	err := c.dbClient.Select(ctx, &res, getJobByMonsterQuery, monID)
 	if err != nil {
 		return nil, fmt.Errorf("select transactions: %w", err)
 	}
@@ -126,7 +125,7 @@ func (c *Client) GetJobByID(ctx context.Context, id int) (*Job, error) {
 	WHERE j.id=$1`
 
 	var res []getJobsQueryResult
-	err := sqlscan.Select(ctx, c.conn.DB, &res, getJobByID, id)
+	err := c.dbClient.Select(ctx, &res, getJobByID, id)
 	if err != nil {
 		return nil, fmt.Errorf("select transactions: %w", err)
 	}
@@ -152,7 +151,7 @@ func (c *Client) GetJobs(ctx context.Context) ([]Job, error) {
 	ON j.id=m.job_id
 	`
 	var res []getJobsQueryResult
-	err := sqlscan.Select(ctx, c.conn.DB, &res, getJobsQuery)
+	err := c.dbClient.Select(ctx, &res, getJobsQuery)
 	if err != nil {
 		return nil, fmt.Errorf("select transactions: %w", err)
 	}
@@ -185,7 +184,7 @@ func (c *Client) GetWoodcuttingJobByID(ctx context.Context, id int) (*WoodCuttin
 		jobMonster
 		TreeType string
 	}
-	err := sqlscan.Select(ctx, c.conn.DB, &res, getWoodcuttingJobByID, id)
+	err := c.dbClient.Select(ctx, &res, getWoodcuttingJobByID, id)
 	if err != nil {
 		return nil, fmt.Errorf("select transactions: %w", err)
 	}

@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/georgysavva/scany/sqlscan"
+	"github.com/diezfx/idlegame-backend/pkg/db"
 )
 
 func (s *Client) GetItem(ctx context.Context, userID int, itemID string) (*InventoryEntry, error) {
@@ -15,7 +15,7 @@ func (s *Client) GetItem(ctx context.Context, userID int, itemID string) (*Inven
 	WHERE user_id=$1 AND item_def_id=$2
 	`
 	var res InventoryEntry
-	err := sqlscan.Get(ctx, s.conn, &res, getItemQuantityQuery, userID, itemID)
+	err := s.dbClient.Get(ctx, &res, getItemQuantityQuery, userID, itemID)
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	}
@@ -38,7 +38,7 @@ func (s *Client) AddItem(ctx context.Context, userID int, itemID string, quantit
 	`
 	var newQuantity int
 
-	err := s.conn.QueryRowContext(ctx, addItemQuery, &newQuantity, addItemQuery, userID, itemID, quantity).Scan(&newQuantity)
+	err := s.dbClient.Get(ctx, &newQuantity, addItemQuery, addItemQuery, userID, itemID, quantity)
 	if err != nil {
 		return 0, fmt.Errorf("add item: %w", err)
 	}
@@ -57,10 +57,10 @@ func (s *Client) AddItems(ctx context.Context, items []InventoryEntry) error {
 	RETURNING quantity
 	`
 
-	return s.withTx(ctx, func(tx *sql.Tx) error {
+	return s.dbClient.WithTx(ctx, func(tx db.Querier) error {
 		var newQuantity int
 		for _, item := range items {
-			err := tx.QueryRowContext(ctx, addItemQuery, item.UserID, item.ItemDefID, item.Quantity).Scan(&newQuantity)
+			err := tx.Get(ctx, &newQuantity, addItemQuery, item.UserID, item.ItemDefID, item.Quantity)
 			if err != nil {
 				return fmt.Errorf("add item %s: %w", item.ItemDefID, err)
 			}
@@ -76,7 +76,7 @@ func (s *Client) GetInventory(ctx context.Context, userID int) ([]InventoryEntry
 	FROM inventory_items
 	WHERE user_id=$1
 	`
-	err := sqlscan.Select(ctx, s.conn.DB, &res, getInventoryQuery, userID)
+	err := s.dbClient.Select(ctx, &res, getInventoryQuery, userID)
 	if err != nil {
 		return nil, fmt.Errorf("select inventory: %w", err)
 	}

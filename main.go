@@ -7,7 +7,7 @@ import (
 
 	"github.com/diezfx/idlegame-backend/internal/config"
 	"github.com/diezfx/idlegame-backend/internal/storage"
-	"github.com/diezfx/idlegame-backend/pkg/postgres"
+	"github.com/diezfx/idlegame-backend/pkg/db"
 )
 
 func main() {
@@ -18,7 +18,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	psqlClient, err := postgres.New(cfg.DB)
+	psqlClient, err := db.New(cfg.DB)
 	if err != nil {
 		log.Fatal(err)
 	}
