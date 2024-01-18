@@ -48,28 +48,29 @@ func (c *Client) StoreNewWoodCuttingJob(ctx context.Context, userID, monsterID i
 
 func (c *Client) DeleteWoodCuttingJob(ctx context.Context, jobID int) error {
 	err := c.withTx(ctx, func(tx *sql.Tx) error {
-		const deleteJobQuery = `
-		DELETE FROM jobs
-		WHERE id=$1
-		`
-		_, err := tx.ExecContext(ctx, deleteJobQuery, jobID)
-		if err != nil {
-			return err
-		}
-
 		const deleteMonsterEntriesQuery = `
 		DELETE FROM job_monsters
 		WHERE job_id=$1
 		`
-		_, err = tx.ExecContext(ctx, deleteMonsterEntriesQuery, jobID)
+		_, err := tx.ExecContext(ctx, deleteMonsterEntriesQuery, jobID)
 		if err != nil {
 			return err
 		}
+
 		const deleteWoodCuttingJobQuery = `
 		DELETE FROM woodcutting_jobs
 		WHERE job_id=$1
 		`
 		_, err = tx.ExecContext(ctx, deleteWoodCuttingJobQuery, jobID)
+		if err != nil {
+			return err
+		}
+
+		const deleteJobQuery = `
+		DELETE FROM jobs
+		WHERE id=$1
+		`
+		_, err = tx.ExecContext(ctx, deleteJobQuery, jobID)
 		if err != nil {
 			return err
 		}

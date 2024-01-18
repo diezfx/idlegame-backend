@@ -18,13 +18,17 @@ import (
 type APIHandler struct {
 	jobService       JobService
 	inventoryService InventoryService
+	monsterService   MonsterService
 }
 
-func newAPIHandler(jobService JobService, inventoryService InventoryService) *APIHandler {
-	return &APIHandler{jobService: jobService, inventoryService: inventoryService}
+func newAPIHandler(jobService JobService, inventoryService InventoryService, monsterService MonsterService) *APIHandler {
+	return &APIHandler{
+		jobService:       jobService,
+		inventoryService: inventoryService,
+		monsterService:   monsterService}
 }
 
-func InitAPI(cfg *config.Config, jobService JobService, inventoryService InventoryService) *http.Server {
+func InitAPI(cfg *config.Config, jobService JobService, inventoryService InventoryService, monsterService MonsterService) *http.Server {
 	mr := gin.New()
 	mr.Use(gin.Recovery())
 	mr.Use(logger.HTTPLoggingMiddleware())
@@ -42,8 +46,9 @@ func InitAPI(cfg *config.Config, jobService JobService, inventoryService Invento
 	}
 
 	// jobHandlers
-	api := newAPIHandler(jobService, inventoryService)
+	api := newAPIHandler(jobService, inventoryService, monsterService)
 
+	r.GET("/monsters/:id", api.GetMonster)
 	r.GET("/jobs/:id", api.GetJob)
 	r.POST("/jobs/woodcutting", api.PostWoodcuttingJob)
 	r.GET("/jobs/woodcutting/:id", api.GetWoodcuttingJob)
@@ -55,29 +60,6 @@ func InitAPI(cfg *config.Config, jobService JobService, inventoryService Invento
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
-	}
-}
-
-func handleError(ctx *gin.Context, err error) {
-	switch {
-	case errors.Is(err, errInvalidInput):
-		logger.Info(ctx).Err(err).Msg("request failed with invalid input")
-		ctx.JSON(http.StatusBadRequest, ErrorResponse{
-			ErrorCode: http.StatusBadRequest,
-			Reason:    "invalid input",
-		})
-	case errors.Is(err, service.ErrProjectNotFound):
-		logger.Info(ctx).Err(err).Msg("not found")
-		ctx.JSON(http.StatusBadRequest, ErrorResponse{
-			ErrorCode: http.StatusNotFound,
-			Reason:    "not found",
-		})
-	default:
-		logger.Error(ctx, err).Msg("unexpected error occurred")
-		ctx.JSON(http.StatusBadRequest, ErrorResponse{
-			ErrorCode: http.StatusInternalServerError,
-			Reason:    "unexpected",
-		})
 	}
 }
 
@@ -158,4 +140,54 @@ func (api *APIHandler) GetInventory(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, resp)
+}
+
+func (api *APIHandler) GetMonster(ctx *gin.Context) {
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if idStr == "" || err != nil {
+		handleError(ctx, errInvalidInput)
+		return
+	}
+	resp, err := api.monsterService.GetMonsterByID(ctx, id)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+	ctx.JSON(http.StatusOK, toMonster(resp))
+}
+
+func handleError(ctx *gin.Context, err error) {
+	switch {
+	case errors.Is(err, errInvalidInput):
+		logger.Info(ctx).Err(err).Msg("request failed with invalid input")
+		ctx.JSON(http.StatusBadRequest, ErrorResponse{
+			ErrorCode: http.StatusBadRequest,
+			Reason:    "invalid input",
+		})
+	case errors.Is(err, service.ErrProjectNotFound):
+		logger.Info(ctx).Err(err).Msg("not found")
+		ctx.JSON(http.StatusNotFound, ErrorResponse{
+			ErrorCode: http.StatusNotFound,
+			Reason:    "not found",
+		})
+	case errors.Is(err, service.ErrLevelRequirementNotMet):
+		logger.Info(ctx).Err(err).Msg("level requirement not met")
+		ctx.JSON(http.StatusBadRequest, ErrorResponse{
+			ErrorCode: http.StatusBadRequest,
+			Reason:    "level requirement not met",
+		})
+	case errors.Is(err, service.ErrJobTypeNotFound):
+		logger.Info(ctx).Err(err).Msg("job type not found")
+		ctx.JSON(http.StatusBadRequest, ErrorResponse{
+			ErrorCode: http.StatusBadRequest,
+			Reason:    "job type not found",
+		})
+	default:
+		logger.Error(ctx, err).Msg("unexpected error occurred")
+		ctx.JSON(http.StatusInternalServerError, ErrorResponse{
+			ErrorCode: http.StatusInternalServerError,
+			Reason:    "unexpected",
+		})
+	}
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/diezfx/idlegame-backend/internal/service/inventory"
 	"github.com/diezfx/idlegame-backend/internal/service/item"
 	"github.com/diezfx/idlegame-backend/internal/service/jobs"
+	"github.com/diezfx/idlegame-backend/internal/service/monster"
 	"github.com/diezfx/idlegame-backend/internal/storage"
 	"github.com/diezfx/idlegame-backend/pkg/logger"
 	"github.com/diezfx/idlegame-backend/pkg/postgres"
@@ -44,10 +45,11 @@ func SetupSplitService(ctx context.Context) (*http.Server, *jobs.Daemon, error) 
 
 	jobService := jobs.New(storageClient, storageClient, storageClient, itemContainer)
 	inventoryService := inventory.New(storageClient)
+	monsterService := monster.New(storageClient)
 
 	jobDaemon := jobs.NewDaemon(jobService)
 
-	router := api.InitAPI(&cfg, jobService, inventoryService)
+	router := api.InitAPI(&cfg, jobService, inventoryService, monsterService)
 
 	srv := &http.Server{
 		Handler: router.Handler,

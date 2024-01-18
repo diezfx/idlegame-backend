@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/diezfx/idlegame-backend/internal/service/jobs"
+	"github.com/diezfx/idlegame-backend/internal/service/monster"
 )
 
 type InvalidArgumentError struct {
@@ -27,4 +28,22 @@ type StartWoodCuttingJobRequest struct {
 	UserID   int           `json:"userId"`
 	Monster  int           `json:"monster"`
 	TreeType jobs.TreeType `json:"treeType"`
+}
+
+type Monster struct {
+	ID         int    `json:"id"`
+	Name       string `json:"name"`
+	Type       string `json:"type"`
+	Level      int    `json:"level"`
+	Experience int    `json:"experience"`
+}
+
+func toMonster(m *monster.Monster) Monster {
+	return Monster{
+		ID:         m.ID,
+		Name:       m.Name(),
+		Type:       m.Type().String(),
+		Level:      m.Level(),
+		Experience: m.Experience,
+	}
 }

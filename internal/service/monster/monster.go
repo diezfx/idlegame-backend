@@ -11,6 +11,10 @@ const (
 	EarthType MonsterType = "Earth"
 )
 
+func (t MonsterType) String() string {
+	return string(t)
+}
+
 var monList = map[int]MonsterDefinition{
 	1: {ID: 1, Name: "schiggo", Type: WaterType},
 	2: {ID: 2, Name: "bisa", Type: EarthType},
@@ -29,7 +33,7 @@ type Monster struct {
 	Experience   int
 }
 
-func New(id, monsterDefID int) Monster {
+func NewMonster(id, monsterDefID int) Monster {
 	return Monster{
 		ID:           id,
 		MonsterDefID: monsterDefID,
@@ -60,6 +64,10 @@ func (m *Monster) Level() int {
 
 func (m *Monster) Type() MonsterType {
 	return monList[m.MonsterDefID].Type
+}
+
+func (m *Monster) Name() string {
+	return monList[m.MonsterDefID].Name
 }
 
 func MonsterFromStorage(m *storage.Monster) *Monster {

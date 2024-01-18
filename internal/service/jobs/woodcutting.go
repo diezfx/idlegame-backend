@@ -85,7 +85,7 @@ func (s *JobService) StartWoodCuttingJob(ctx context.Context, userID, monsterID 
 		return -1, service.ErrAlreadyStartedJob
 	}
 
-	// check if requirements are meant
+	// check if requirements are met
 
 	storeMon, err := s.monsterStorage.GetMonsterByID(ctx, monsterID)
 	if err != nil {
@@ -99,7 +99,7 @@ func (s *JobService) StartWoodCuttingJob(ctx context.Context, userID, monsterID 
 	}
 
 	if taskDefinition.LevelRequirement > mon.Level() {
-		return -1, service.ErrJobTypeNotFound
+		return -1, service.ErrLevelRequirementNotMet
 	}
 
 	// start
