@@ -9,19 +9,16 @@ type jobMonster struct {
 
 type job struct {
 	ID        int
+	JobDefID  string
 	StartedAt time.Time
 	UpdatedAt time.Time
 	JobType   string
 	UserID    int
 }
 
-type GatheringJob struct {
-	Job
-	GatheringType string
-}
-
 type Job struct {
 	ID        int
+	JobDefID  string
 	UserID    int
 	StartedAt time.Time
 	UpdatedAt time.Time

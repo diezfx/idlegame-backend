@@ -15,13 +15,13 @@ type JobService struct {
 	jobStorage       JobStorage
 	monsterStorage   MonsterStorage
 	inventoryStorage InventoryStorage
-	woodContainer    JobContainer
+	jobContainer     JobContainer
 }
 
 func New(jobStorage JobStorage, monsterStorage MonsterStorage, inventoryStorage InventoryStorage, itemContainer *item.ItemContainer) *JobService {
 	return &JobService{
 		jobStorage: jobStorage, monsterStorage: monsterStorage, inventoryStorage: inventoryStorage,
-		woodContainer: *InitJobs(itemContainer),
+		jobContainer: *InitJobs(itemContainer),
 	}
 }
 
@@ -80,21 +80,27 @@ func calculateTicks(job Job, duration time.Duration, now time.Time) int {
 
 func InitJobs(itemContainer *item.ItemContainer) *JobContainer {
 	// Woodcutting
-	itemContainer.AddItemDefinition(item.ItemDefinition{ID: SpruceType.String(), Tags: []string{}})
-	itemContainer.AddItemDefinition(item.ItemDefinition{ID: BirchType.String(), Tags: []string{}})
-	itemContainer.AddItemDefinition(item.ItemDefinition{ID: PineType.String(), Tags: []string{}})
+	itemContainer.AddItemDefinition(item.ItemDefinition{ID: item.SpruceType.String(), Tags: []string{}})
+	itemContainer.AddItemDefinition(item.ItemDefinition{ID: item.BirchType.String(), Tags: []string{}})
+	itemContainer.AddItemDefinition(item.ItemDefinition{ID: item.PineType.String(), Tags: []string{}})
 
 	// Mining
-	itemContainer.AddItemDefinition(item.ItemDefinition{ID: StoneOreType.String(), Tags: []string{}})
-	itemContainer.AddItemDefinition(item.ItemDefinition{ID: CopperOreType.String(), Tags: []string{}})
-	itemContainer.AddItemDefinition(item.ItemDefinition{ID: IronOreType.String(), Tags: []string{}})
-	itemContainer.AddItemDefinition(item.ItemDefinition{ID: GoldOreType.String(), Tags: []string{}})
-	itemContainer.AddItemDefinition(item.ItemDefinition{ID: DiamondOreType.String(), Tags: []string{}})
+	itemContainer.AddItemDefinition(item.ItemDefinition{ID: item.StoneOreType.String(), Tags: []string{}})
+	itemContainer.AddItemDefinition(item.ItemDefinition{ID: item.CopperOreType.String(), Tags: []string{}})
+	itemContainer.AddItemDefinition(item.ItemDefinition{ID: item.IronOreType.String(), Tags: []string{}})
+	itemContainer.AddItemDefinition(item.ItemDefinition{ID: item.GoldOreType.String(), Tags: []string{}})
+	itemContainer.AddItemDefinition(item.ItemDefinition{ID: item.DiamondOreType.String(), Tags: []string{}})
+
+	// Harvesting
+	itemContainer.AddItemDefinition(item.ItemDefinition{ID: item.CarrotCropType.String(), Tags: []string{}})
+	itemContainer.AddItemDefinition(item.ItemDefinition{ID: item.PotatoCropType.String(), Tags: []string{}})
+	itemContainer.AddItemDefinition(item.ItemDefinition{ID: item.WheatCropType.String(), Tags: []string{}})
 
 	return &JobContainer{
 		woodcuttingDefs: woodcuttingJobs,
 		miningDefs:      miningJobs,
 		harvestingDefs:  harvestingJobs,
+		smeltingDefs:    smeltingJobs,
 	}
 }
 
@@ -110,7 +116,7 @@ func (s *JobService) StopJob(ctx context.Context, id int) error {
 
 	if JobType(job.JobType) == WoodCuttingJobType || JobType(job.JobType) == MiningJobType || JobType(job.JobType) == HarvestingJobType {
 		// remove job
-		err = s.jobStorage.DeleteGatheringJob(ctx, id)
+		err = s.jobStorage.DeleteJobByID(ctx, id)
 		if err != nil {
 			return fmt.Errorf("delete job entry for jobID %d: %w", id, err)
 		}

@@ -4,70 +4,31 @@ import (
 	"time"
 
 	"github.com/diezfx/idlegame-backend/internal/service/inventory"
+	"github.com/diezfx/idlegame-backend/internal/service/item"
 	"github.com/diezfx/idlegame-backend/internal/storage"
 )
 
-// what kind of wood
-// different tree types have
-// level requirements, durations, exp gains
-type TreeType string
-
-const (
-	SpruceType TreeType = "Spruce"
-	BirchType  TreeType = "Birch"
-	PineType   TreeType = "Pine"
-)
-
-type OreType string
-
-const (
-	StoneOreType   OreType = "Stone"
-	CopperOreType  OreType = "Copper"
-	IronOreType    OreType = "Iron"
-	GoldOreType    OreType = "Gold"
-	DiamondOreType OreType = "Diamond"
-)
-
-type CropType string
-
-const (
-	//low quality crop
-	WheatCropType  CropType = "Wheat"
-	CarrotCropType CropType = "Carrot"
-	PotatoCropType CropType = "Potato"
-)
-
-func (t TreeType) String() string {
-	return string(t)
-}
-
-func (t OreType) String() string {
-	return string(t)
-}
-
-func (t CropType) String() string {
-	return string(t)
-}
-
 type WoodCuttingJob struct {
 	Job
-	TreeType TreeType `json:"treeType"`
+	TreeType item.TreeType `json:"treeType"`
 }
 
 type MiningJob struct {
 	Job
-	OreType `json:"oreType"`
+	OreType item.OreType `json:"oreType"`
 }
 
 type HarvestingJob struct {
 	Job
-	CropType `json:"cropType"`
+	CropType item.CropType `json:"cropType"`
 }
 
 type JobContainer struct {
-	woodcuttingDefs []WoodCuttingJobDefinition
-	miningDefs      []MiningJobDefinition
-	harvestingDefs  []HarvestingJobDefinition
+	woodcuttingDefs []JobDefinition
+	miningDefs      []JobDefinition
+	harvestingDefs  []JobDefinition
+
+	smeltingDefs []Recipes
 }
 
 // what kind of wood
@@ -77,6 +38,7 @@ const (
 	WoodCuttingJobType JobType = "WoodCutting"
 	MiningJobType      JobType = "Mining"
 	HarvestingJobType  JobType = "Harvesting"
+	SmeltingJobType    JobType = "Smelting"
 )
 
 type Job struct {
@@ -88,24 +50,24 @@ type Job struct {
 	JobType   string
 }
 
-func FromWoodcuttingJob(j *storage.GatheringJob) *WoodCuttingJob {
+func FromWoodcuttingJob(j *storage.Job) *WoodCuttingJob {
 	return &WoodCuttingJob{
-		Job:      fromJob(j.Job),
-		TreeType: TreeType(j.GatheringType),
+		Job:      fromJob(*j),
+		TreeType: item.TreeType(j.JobDefID),
 	}
 }
 
-func FromMiningJob(j *storage.GatheringJob) *MiningJob {
+func FromMiningJob(j *storage.Job) *MiningJob {
 	return &MiningJob{
-		Job:     fromJob(j.Job),
-		OreType: OreType(j.GatheringType),
+		Job:     fromJob(*j),
+		OreType: item.OreType(j.JobDefID),
 	}
 }
 
-func FromHarvestingJob(j *storage.GatheringJob) *HarvestingJob {
+func FromHarvestingJob(j *storage.Job) *HarvestingJob {
 	return &HarvestingJob{
-		Job:      fromJob(j.Job),
-		CropType: CropType(j.GatheringType),
+		Job:      fromJob(*j),
+		CropType: item.CropType(j.JobDefID),
 	}
 }
 
@@ -115,47 +77,44 @@ type Reward struct {
 }
 
 type JobDefinition struct {
+	JobDefID         string
 	JobType          JobType
 	LevelRequirement int
 	Duration         time.Duration
 	Rewards          Reward
 }
-type WoodCuttingJobDefinition struct {
-	JobDefinition
-	TreeType TreeType
-}
 
-type MiningJobDefinition struct {
-	JobDefinition
-	OreType OreType
-}
+func (c *JobContainer) GetGatheringJobDefinition(jobType JobType, jobDefID string) *JobDefinition {
 
-type HarvestingJobDefinition struct {
-	JobDefinition
-	CropType CropType
-}
+	if jobType == WoodCuttingJobType {
+		for _, def := range c.woodcuttingDefs {
+			if def.JobDefID == jobDefID {
+				return &def
+			}
+		}
+	}
 
-func (c *JobContainer) GetWoodCuttingDefinition(treeType TreeType) *WoodCuttingJobDefinition {
-	for _, def := range c.woodcuttingDefs {
-		if def.TreeType == treeType {
-			return &def
+	if jobType == MiningJobType {
+		for _, def := range c.miningDefs {
+			if def.JobDefID == jobDefID {
+				return &def
+			}
+		}
+	}
+
+	if jobType == HarvestingJobType {
+		for _, def := range c.harvestingDefs {
+			if def.JobDefID == jobDefID {
+				return &def
+			}
 		}
 	}
 	return nil
 }
 
-func (c *JobContainer) GetMiningDefinition(oreType OreType) *MiningJobDefinition {
-	for _, def := range c.miningDefs {
-		if def.OreType == oreType {
-			return &def
-		}
-	}
-	return nil
-}
-
-func (c *JobContainer) GetHarvestingDefinition(cropType CropType) *HarvestingJobDefinition {
-	for _, def := range c.harvestingDefs {
-		if def.CropType == cropType {
+func (c *JobContainer) GetSmeltingJobDefinition(jobDefID string) *Recipes {
+	for _, def := range c.smeltingDefs {
+		if def.JobDefID == jobDefID {
 			return &def
 		}
 	}

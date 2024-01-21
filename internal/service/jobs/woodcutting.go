@@ -8,56 +8,53 @@ import (
 
 	"github.com/diezfx/idlegame-backend/internal/service"
 	"github.com/diezfx/idlegame-backend/internal/service/inventory"
+	"github.com/diezfx/idlegame-backend/internal/service/item"
 	"github.com/diezfx/idlegame-backend/internal/service/monster"
 	"github.com/diezfx/idlegame-backend/internal/storage"
 )
 
-var woodcuttingJobs = []WoodCuttingJobDefinition{
+var woodcuttingJobs = []JobDefinition{
+
 	{
-		JobDefinition: JobDefinition{
-			JobType:          WoodCuttingJobType,
-			LevelRequirement: 1,
-			Duration:         time.Second * 3,
-			Rewards: Reward{
-				Items: []inventory.Item{
-					{ItemDefID: SpruceType.String(), Quantity: 1},
-				},
-				Exp: 1,
+		JobDefID:         item.SpruceType.String(),
+		JobType:          WoodCuttingJobType,
+		LevelRequirement: 1,
+		Duration:         time.Second * 3,
+		Rewards: Reward{
+			Items: []inventory.Item{
+				{ItemDefID: item.SpruceType.String(), Quantity: 1},
 			},
+			Exp: 1,
 		},
-		TreeType: SpruceType,
 	},
 	{
-		JobDefinition: JobDefinition{
-			JobType:          WoodCuttingJobType,
-			LevelRequirement: 2,
-			Duration:         time.Second * 3,
-			Rewards: Reward{
-				Items: []inventory.Item{
-					{ItemDefID: BirchType.String(), Quantity: 1},
-				},
-				Exp: 2,
+		JobDefID:         item.BirchType.String(),
+		JobType:          WoodCuttingJobType,
+		LevelRequirement: 2,
+		Duration:         time.Second * 3,
+		Rewards: Reward{
+			Items: []inventory.Item{
+				{ItemDefID: item.BirchType.String(), Quantity: 1},
 			},
+			Exp: 2,
 		},
-		TreeType: BirchType,
 	},
+
 	{
-		JobDefinition: JobDefinition{
-			JobType:          WoodCuttingJobType,
-			LevelRequirement: 3,
-			Duration:         time.Second * 3,
-			Rewards: Reward{
-				Items: []inventory.Item{
-					{ItemDefID: PineType.String(), Quantity: 1},
-				},
-				Exp: 3,
+		JobDefID:         item.PineType.String(),
+		JobType:          WoodCuttingJobType,
+		LevelRequirement: 3,
+		Duration:         time.Second * 3,
+		Rewards: Reward{
+			Items: []inventory.Item{
+				{ItemDefID: item.PineType.String(), Quantity: 1},
 			},
+			Exp: 3,
 		},
-		TreeType: PineType,
 	},
 }
 
-func (s *JobService) StartWoodCuttingJob(ctx context.Context, userID, monsterID int, treeType TreeType) (int, error) {
+func (s *JobService) StartWoodCuttingJob(ctx context.Context, userID, monsterID int, treeType item.TreeType) (int, error) {
 	// check if monster is not occupied
 	_, err := s.jobStorage.GetJobByMonster(ctx, monsterID)
 	if err != nil && !errors.Is(err, storage.ErrNotFound) {
@@ -75,7 +72,7 @@ func (s *JobService) StartWoodCuttingJob(ctx context.Context, userID, monsterID 
 	}
 	mon := monster.MonsterFromStorage(storeMon)
 
-	taskDefinition := s.woodContainer.GetWoodCuttingDefinition(treeType)
+	taskDefinition := s.jobContainer.GetGatheringJobDefinition(WoodCuttingJobType, treeType.String())
 	if taskDefinition == nil {
 		return -1, fmt.Errorf("get job definition %d: %w", monsterID, service.ErrJobTypeNotFound)
 	}
@@ -86,7 +83,7 @@ func (s *JobService) StartWoodCuttingJob(ctx context.Context, userID, monsterID 
 
 	// start
 
-	id, err := s.jobStorage.StoreNewGatheringJob(ctx, WoodCuttingJobType.String(), userID, monsterID, treeType.String())
+	id, err := s.jobStorage.StoreNewJob(ctx, WoodCuttingJobType.String(), userID, monsterID, treeType.String())
 	if err != nil {
 		return -1, err
 	}
@@ -96,7 +93,7 @@ func (s *JobService) StartWoodCuttingJob(ctx context.Context, userID, monsterID 
 //getJob
 
 func (s *JobService) GetWoodcuttingJob(ctx context.Context, id int) (*WoodCuttingJob, error) {
-	job, err := s.jobStorage.GetGatheringJobByID(ctx, id)
+	job, err := s.jobStorage.GetJobByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("get job entry for jobID %d: %w", id, err)
 	}
@@ -110,7 +107,8 @@ func (s *JobService) UpdateWoodcuttingJob(ctx context.Context, id int) error {
 		return fmt.Errorf("get job entry for jobID %d: %w", id, err)
 	}
 	now := time.Now()
-	jobDefintion := s.woodContainer.GetWoodCuttingDefinition(job.TreeType)
+	jobDefintion := s.jobContainer.GetGatheringJobDefinition(WoodCuttingJobType, job.TreeType.String())
+
 	executionCount := calculateTicks(job.Job, jobDefintion.Duration, now)
 
 	rewards := calculateRewards(jobDefintion.Rewards, executionCount)

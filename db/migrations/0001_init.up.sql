@@ -8,6 +8,7 @@ CREATE TABLE users(
 
 CREATE TABLE jobs(
         id SERIAL PRIMARY KEY,
+        job_def_id TEXT NOT NULL,
         user_id integer NOT NULL,
         started_at TIMESTAMPTZ NOT NULL,
         updated_at TIMESTAMPTZ NOT NULL,
@@ -33,6 +34,7 @@ CREATE TABLE gathering_jobs (
       FOREIGN KEY(job_id) 
 	    REFERENCES jobs(id)
 );
+
 
 
 CREATE TABLE monsters(

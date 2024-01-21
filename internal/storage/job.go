@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"time"
+
+	"github.com/diezfx/idlegame-backend/pkg/db"
 )
 
 const insertJobQuery = `
-INSERT INTO jobs(user_id,started_at,updated_at,job_type)
-values($1,$2,$2,$3)
+INSERT INTO jobs(job_def_id,user_id,started_at,updated_at,job_type)
+values($1,$2,$3,$3,$4)
 RETURNING id`
 
 const insertMonsterQuery = `
@@ -62,7 +64,7 @@ func (c *Client) GetJobByMonster(ctx context.Context, monID int) (*Job, error) {
 
 func (c *Client) GetJobByID(ctx context.Context, id int) (*Job, error) {
 	const getJobByID = `
-	SELECT j.id,j.started_at,j.updated_at,j.job_type, m.monster_id, j.user_id
+	SELECT j.id,j.job_def_id,j.started_at,j.updated_at,j.job_type, m.monster_id, j.user_id
 	FROM jobs as j
 	LEFT JOIN job_monsters as m
 	ON j.id=m.job_id
@@ -78,8 +80,28 @@ func (c *Client) GetJobByID(ctx context.Context, id int) (*Job, error) {
 	}
 
 	job := toJob(res)
-
 	return &job, nil
+}
+
+func (c *Client) StoreNewJob(ctx context.Context, jobType string, userID, monsterID int, jobDefId string) (int, error) {
+	var jobID int
+
+	err := c.dbClient.WithTx(ctx, func(tx db.Querier) error {
+
+		err := tx.Get(ctx, &jobID, insertJobQuery, jobDefId, userID, time.Now(), jobType)
+		if err != nil {
+			return fmt.Errorf("insert job: %w", err)
+		}
+		_, err = tx.Exec(ctx, insertMonsterQuery, jobID, monsterID)
+		if err != nil {
+			return fmt.Errorf("insert job_monster: %w", err)
+		}
+		return nil
+	})
+	if err != nil {
+		return -1, fmt.Errorf("transaction failed: %w", err)
+	}
+	return jobID, nil
 }
 
 type getJobsQueryResult struct {
@@ -119,9 +141,29 @@ func toJob(res []getJobsQueryResult) Job {
 		job.Monsters = append(job.Monsters, entry.MonsterID)
 	}
 	job.ID = res[0].ID
+	job.JobDefID = res[0].JobDefID
 	job.UserID = res[0].UserID
 	job.JobType = res[0].JobType
 	job.StartedAt = res[0].StartedAt
 	job.UpdatedAt = res[0].UpdatedAt
 	return job
+}
+
+func (c *Client) DeleteJobByID(ctx context.Context, jobID int) error {
+	err := c.dbClient.WithTx(ctx, func(tx db.Querier) error {
+		_, err := tx.Exec(ctx, deleteMonsterEntriesQuery, jobID)
+		if err != nil {
+			return err
+		}
+
+		_, err = tx.Exec(ctx, deleteJobQuery, jobID)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("transaction failed: %w", err)
+	}
+	return nil
 }
