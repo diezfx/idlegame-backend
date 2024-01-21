@@ -42,6 +42,12 @@ type StartHarvestingJobRequest struct {
 	CropType item.CropType `json:"cropType"`
 }
 
+type StartSmeltingJob struct {
+	UserID   int    `json:"userId"`
+	Monster  int    `json:"monster"`
+	JobDefID string `json:"jobDefId"`
+}
+
 type Monster struct {
 	ID         int    `json:"id"`
 	Name       string `json:"name"`

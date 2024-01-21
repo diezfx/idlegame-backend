@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/diezfx/idlegame-backend/pkg/db"
-	"github.com/diezfx/idlegame-backend/pkg/logger"
 )
 
 func (c *Client) GetMonsterByID(ctx context.Context, id int) (*Monster, error) {
@@ -66,6 +65,5 @@ func (c *Client) AddMonsterExperience(ctx context.Context, monID, additionalExp 
 	if err != nil {
 		return 0, fmt.Errorf("execute transaction: %w", err)
 	}
-	logger.Debug(ctx).Any("exp", currentExp).Msg("added experience")
 	return currentExp, nil
 }

@@ -143,6 +143,18 @@ func toInventoryEntries(userID int, itm []inventory.Item) []storage.InventoryEnt
 	return entries
 }
 
+func costToInventoryEntries(userID int, itm []Ingredient) []storage.InventoryEntry {
+	entries := []storage.InventoryEntry{}
+	for _, i := range itm {
+		entries = append(entries, storage.InventoryEntry{
+			UserID:    userID,
+			ItemDefID: string(i.Item),
+			Quantity:  -i.Count,
+		})
+	}
+	return entries
+}
+
 func calculateRewards(rewards Reward, executionCount int) Reward {
 	var rewardItems = []inventory.Item{}
 	for _, item := range rewards.Items {
@@ -155,4 +167,15 @@ func calculateRewards(rewards Reward, executionCount int) Reward {
 		Items: rewardItems,
 		Exp:   rewards.Exp * executionCount,
 	}
+}
+
+func calculateCosts(costs []Ingredient, executionCount int) []Ingredient {
+	var costItems = []Ingredient{}
+	for _, item := range costs {
+		costItems = append(costItems, Ingredient{
+			Item:  item.Item,
+			Count: item.Count * executionCount,
+		})
+	}
+	return costItems
 }

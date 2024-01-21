@@ -61,6 +61,7 @@ func (s *JobService) GetJobs(ctx context.Context) ([]Job, error) {
 func fromJob(j storage.Job) Job {
 	return Job{
 		ID:        j.ID,
+		JobDefID:  j.JobDefID,
 		StartedAt: j.StartedAt,
 		UpdatedAt: j.UpdatedAt,
 		Monsters:  j.Monsters,

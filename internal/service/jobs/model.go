@@ -43,6 +43,7 @@ const (
 
 type Job struct {
 	ID        int
+	JobDefID  string
 	UserID    int
 	StartedAt time.Time
 	UpdatedAt time.Time

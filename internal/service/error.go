@@ -8,4 +8,5 @@ var (
 	ErrAlreadyStartedJob      = errors.New("another job was already started")
 	ErrLevelRequirementNotMet = errors.New("the level requirement was not met")
 	ErrNotEnoughInventory     = errors.New("not enough inventory")
+	ErrNotEnoughItems         = errors.New("not enough items")
 )

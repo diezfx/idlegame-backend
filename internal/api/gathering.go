@@ -55,6 +55,23 @@ func (api *APIHandler) PostHarvestingJob(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, resp)
 }
 
+func (api *APIHandler) PostSmeltingJob(ctx *gin.Context) {
+	var req StartSmeltingJob
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		handleError(ctx, errInvalidInput)
+		return
+	}
+	resp, err := api.jobService.StartSmeltingJob(ctx, req.UserID, req.Monster, req.JobDefID)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+	// resource created
+	// set header to url with id
+	ctx.Header("Location", fmt.Sprintf("/api/v1.0/jobs/mining/%d", resp))
+	ctx.JSON(http.StatusCreated, resp)
+}
+
 // postminingjob
 func (api *APIHandler) PostMiningJob(ctx *gin.Context) {
 	var req StartMiningJobRequest

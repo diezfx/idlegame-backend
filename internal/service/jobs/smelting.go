@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/diezfx/idlegame-backend/internal/service"
@@ -11,6 +12,7 @@ import (
 	"github.com/diezfx/idlegame-backend/internal/service/item"
 	"github.com/diezfx/idlegame-backend/internal/service/monster"
 	"github.com/diezfx/idlegame-backend/internal/storage"
+	"github.com/diezfx/idlegame-backend/pkg/logger"
 )
 
 func (s *JobService) StartSmeltingJob(ctx context.Context, userID, monsterID int, jobDefID string) (int, error) {
@@ -38,6 +40,16 @@ func (s *JobService) StartSmeltingJob(ctx context.Context, userID, monsterID int
 
 	if taskDefinition.LevelRequirement > mon.Level() {
 		return -1, service.ErrLevelRequirementNotMet
+	}
+
+	inventoryStr, err := s.inventoryStorage.GetInventory(ctx, userID)
+	if err != nil {
+		return -1, fmt.Errorf("get inventory for userID %d: %w", userID, err)
+	}
+	inventory := inventory.ToInventoryFromStorageEntries(inventoryStr, userID)
+	maxRuns := calculateMaxRuns(inventory, taskDefinition)
+	if maxRuns == 0 {
+		return -1, service.ErrNotEnoughItems
 	}
 
 	// start
@@ -82,4 +94,84 @@ var smeltingJobs = []*Recipes{
 			},
 		},
 	},
+}
+
+func (s *JobService) UpdateSmeltingJob(ctx context.Context, id int) error {
+	// check if job exists
+	job, err := s.GetJob(ctx, id)
+	if err != nil {
+		return fmt.Errorf("get job entry for jobID %d: %w", id, err)
+	}
+	now := time.Now()
+	jobDefintion := s.jobContainer.GetSmeltingJobDefinition(job.JobDefID)
+
+	executionCount := calculateTicks(*job, jobDefintion.Duration, now)
+
+	inventoryStr, err := s.inventoryStorage.GetInventory(ctx, job.UserID)
+	if err != nil {
+		return fmt.Errorf("get inventory for userID %d: %w", job.UserID, err)
+	}
+	inventory := inventory.ToInventoryFromStorageEntries(inventoryStr, job.UserID)
+
+	//check that enough items are there
+	maxRuns := calculateMaxRuns(inventory, jobDefintion)
+
+	if maxRuns < executionCount {
+		logger.Debug(ctx).Int("jobID", id).Msg("drop job")
+		err := s.jobStorage.DeleteJobByID(ctx, id)
+		if err != nil {
+			return fmt.Errorf("delete job entry for jobID %d: %w", id, err)
+		}
+	}
+
+	if maxRuns == 0 {
+		return nil
+	}
+
+	rewards := calculateRewards(jobDefintion.Rewards, maxRuns)
+	//item to get
+	costs := calculateCosts(jobDefintion.Ingredients, maxRuns)
+
+	err = s.inventoryStorage.AddItems(ctx, costToInventoryEntries(job.UserID, costs))
+	if err != nil {
+		return fmt.Errorf("remove items for userID %d: %w", job.UserID, err)
+	}
+
+	err = s.inventoryStorage.AddItems(ctx, toInventoryEntries(job.UserID, rewards.Items))
+	if err != nil {
+		return fmt.Errorf("add items for userID %d: %w", job.UserID, err)
+	}
+
+	_, err = s.monsterStorage.AddMonsterExperience(ctx, job.Monsters[0], rewards.Exp)
+	if err != nil {
+		return fmt.Errorf("add exp for userID %d: %w", job.UserID, err)
+	}
+
+	err = s.jobStorage.UpdateJobUpdatedAt(ctx, id, now)
+	if err != nil {
+		return fmt.Errorf("update job entry for jobID %d: %w", id, err)
+	}
+	return nil
+}
+
+func calculateMaxRuns(inventory *inventory.Inventory, jobDef *Recipes) int {
+	maxRuns := math.MaxInt32
+	for _, cost := range jobDef.Ingredients {
+		found := false
+		for _, item := range inventory.Items {
+			if item.ItemDefID == string(cost.Item) {
+				max := item.Quantity / cost.Count
+				if max < maxRuns {
+					maxRuns = max
+					found = true
+				}
+			}
+			// handle case that item is not found
+
+		}
+		if !found {
+			return 0
+		}
+	}
+	return maxRuns
 }

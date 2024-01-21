@@ -61,6 +61,10 @@ func InitAPI(cfg *config.Config, jobService JobService, inventoryService Invento
 	harvestingRouter.POST("/", api.PostHarvestingJob)
 	harvestingRouter.GET("/:id", api.GetHarvestingJob)
 
+	smeltingRouter := r.Group("/jobs/smelting")
+	smeltingRouter.POST("/", api.PostSmeltingJob)
+	smeltingRouter.GET("/:id", api.GetHarvestingJob)
+
 	r.DELETE("/jobs/:id", api.DeleteJob)
 	r.GET("/inventory/:userID", api.GetInventory)
 	return &http.Server{
@@ -158,6 +162,12 @@ func handleError(ctx *gin.Context, err error) {
 		ctx.JSON(http.StatusBadRequest, ErrorResponse{
 			ErrorCode: http.StatusBadRequest,
 			Reason:    "job type not found",
+		})
+	case errors.Is(err, service.ErrNotEnoughItems):
+		logger.Info(ctx).Err(err).Msg("not enough items for job")
+		ctx.JSON(http.StatusBadRequest, ErrorResponse{
+			ErrorCode: http.StatusNotFound,
+			Reason:    "not enough items to start job",
 		})
 	default:
 		logger.Error(ctx, err).Msg("unexpected error occurred")

@@ -17,7 +17,7 @@ type JobService interface {
 	GetWoodcuttingJob(ctx context.Context, id int) (*jobs.WoodCuttingJob, error)
 	StartMiningJob(ctx context.Context, userID, monsterID int, oreType item.OreType) (int, error)
 	StartHarvestingJob(ctx context.Context, userID, monsterID int, cropType item.CropType) (int, error)
-	GetHarvestingJob(ctx context.Context, id int) (*jobs.HarvestingJob, error)
+	StartSmeltingJob(ctx context.Context, userID, monsterID int, jobDefID string) (int, error)
 	GetMiningJob(ctx context.Context, id int) (*jobs.MiningJob, error)
 }
 

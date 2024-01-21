@@ -19,6 +19,7 @@ type DaemonJobService interface {
 	UpdateWoodcuttingJob(ctx context.Context, id int) error
 	UpdateMiningJob(ctx context.Context, id int) error
 	UpdateHarvestingJob(ctx context.Context, id int) error
+	UpdateSmeltingJob(ctx context.Context, id int) error
 }
 
 func NewDaemon(jobService DaemonJobService) *Daemon {
@@ -36,13 +37,11 @@ func (d *Daemon) Run(ctx context.Context) error {
 		case <-ctx.Done():
 			return nil
 		case <-ticker.C:
-			logger.Debug(ctx).Msg("daemon tick for jobs")
 			jobs, err := d.jobService.GetJobs(ctx)
 			if err != nil {
 				logger.Error(ctx, err).Msg("get jobs")
 				return err
 			}
-			logger.Debug(ctx).Any("jobs", jobs).Msg("jobs")
 			for _, job := range jobs {
 				if job.JobType == WoodCuttingJobType.String() {
 					err = d.jobService.UpdateWoodcuttingJob(ctx, job.ID)
@@ -62,6 +61,13 @@ func (d *Daemon) Run(ctx context.Context) error {
 					err = d.jobService.UpdateHarvestingJob(ctx, job.ID)
 					if err != nil {
 						logger.Error(ctx, err).Msg("update harvesting job")
+						return err
+					}
+				}
+				if job.JobType == SmeltingJobType.String() {
+					err = d.jobService.UpdateSmeltingJob(ctx, job.ID)
+					if err != nil {
+						logger.Error(ctx, err).Msg("update smelting job")
 						return err
 					}
 				}
