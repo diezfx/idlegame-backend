@@ -15,9 +15,9 @@ type job struct {
 	UserID    int
 }
 
-type WoodCuttingJob struct {
+type GatheringJob struct {
 	Job
-	TreeType string
+	GatheringType string
 }
 
 type Job struct {

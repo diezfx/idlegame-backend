@@ -9,10 +9,15 @@ import (
 )
 
 type JobService interface {
-	StartWoodCuttingJob(ctx context.Context, userID, monsterID int, treeType jobs.TreeType) (int, error)
 	GetJob(ctx context.Context, id int) (*jobs.Job, error)
+	StopJob(ctx context.Context, id int) error
+
+	StartWoodCuttingJob(ctx context.Context, userID, monsterID int, treeType jobs.TreeType) (int, error)
 	GetWoodcuttingJob(ctx context.Context, id int) (*jobs.WoodCuttingJob, error)
-	StopWoodCuttingJob(ctx context.Context, id int) error
+	StartMiningJob(ctx context.Context, userID, monsterID int, oreType jobs.OreType) (int, error)
+	StartHarvestingJob(ctx context.Context, userID, monsterID int, cropType jobs.CropType) (int, error)
+	GetHarvestingJob(ctx context.Context, id int) (*jobs.HarvestingJob, error)
+	GetMiningJob(ctx context.Context, id int) (*jobs.MiningJob, error)
 }
 
 type InventoryService interface {

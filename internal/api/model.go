@@ -30,6 +30,18 @@ type StartWoodCuttingJobRequest struct {
 	TreeType jobs.TreeType `json:"treeType"`
 }
 
+type StartMiningJobRequest struct {
+	UserID  int          `json:"userId"`
+	Monster int          `json:"monster"`
+	OreType jobs.OreType `json:"oreType"`
+}
+
+type StartHarvestingJobRequest struct {
+	UserID   int           `json:"userId"`
+	Monster  int           `json:"monster"`
+	CropType jobs.CropType `json:"cropType"`
+}
+
 type Monster struct {
 	ID         int    `json:"id"`
 	Name       string `json:"name"`

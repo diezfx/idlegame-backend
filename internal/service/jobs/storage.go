@@ -8,9 +8,9 @@ import (
 )
 
 type JobStorage interface {
-	StoreNewWoodCuttingJob(ctx context.Context, userID, monsterID int, woodType string) (int, error)
-	DeleteWoodCuttingJob(ctx context.Context, id int) error
-	GetWoodcuttingJobByID(ctx context.Context, id int) (*storage.WoodCuttingJob, error)
+	StoreNewGatheringJob(ctx context.Context, jobType string, userID, monsterID int, woodType string) (int, error)
+	DeleteGatheringJob(ctx context.Context, id int) error
+	GetGatheringJobByID(ctx context.Context, id int) (*storage.GatheringJob, error)
 	GetJobByMonster(ctx context.Context, monID int) (*storage.Job, error)
 	GetJobByID(ctx context.Context, id int) (*storage.Job, error)
 	UpdateJobUpdatedAt(ctx context.Context, id int, updatedAt time.Time) error

@@ -12,52 +12,80 @@ import (
 	"github.com/diezfx/idlegame-backend/internal/storage"
 )
 
-var woodcuttingJobs = []WoodCuttingJobDefinition{
+var miningJobs = []MiningJobDefinition{
 	{
 		JobDefinition: JobDefinition{
-			JobType:          WoodCuttingJobType,
+			JobType:          MiningJobType,
 			LevelRequirement: 1,
 			Duration:         time.Second * 3,
 			Rewards: Reward{
 				Items: []inventory.Item{
-					{ItemDefID: SpruceType.String(), Quantity: 1},
+					{ItemDefID: StoneOreType.String(), Quantity: 1},
 				},
 				Exp: 1,
 			},
 		},
-		TreeType: SpruceType,
+		OreType: StoneOreType,
 	},
 	{
 		JobDefinition: JobDefinition{
-			JobType:          WoodCuttingJobType,
+			JobType:          MiningJobType,
 			LevelRequirement: 2,
 			Duration:         time.Second * 3,
 			Rewards: Reward{
 				Items: []inventory.Item{
-					{ItemDefID: BirchType.String(), Quantity: 1},
+					{ItemDefID: CopperOreType.String(), Quantity: 1},
 				},
 				Exp: 2,
 			},
 		},
-		TreeType: BirchType,
+		OreType: CopperOreType,
 	},
 	{
 		JobDefinition: JobDefinition{
-			JobType:          WoodCuttingJobType,
+			JobType:          MiningJobType,
 			LevelRequirement: 3,
 			Duration:         time.Second * 3,
 			Rewards: Reward{
 				Items: []inventory.Item{
-					{ItemDefID: PineType.String(), Quantity: 1},
+					{ItemDefID: IronOreType.String(), Quantity: 1},
 				},
 				Exp: 3,
 			},
 		},
-		TreeType: PineType,
+		OreType: IronOreType,
+	},
+	{
+		JobDefinition: JobDefinition{
+			JobType:          MiningJobType,
+			LevelRequirement: 4,
+			Duration:         time.Second * 3,
+			Rewards: Reward{
+				Items: []inventory.Item{
+					{ItemDefID: GoldOreType.String(), Quantity: 1},
+				},
+				Exp: 4,
+			},
+		},
+		OreType: GoldOreType,
+	},
+	{
+		JobDefinition: JobDefinition{
+			JobType:          MiningJobType,
+			LevelRequirement: 5,
+			Duration:         time.Second * 3,
+			Rewards: Reward{
+				Items: []inventory.Item{
+					{ItemDefID: DiamondOreType.String(), Quantity: 1},
+				},
+				Exp: 5,
+			},
+		},
+		OreType: DiamondOreType,
 	},
 }
 
-func (s *JobService) StartWoodCuttingJob(ctx context.Context, userID, monsterID int, treeType TreeType) (int, error) {
+func (s *JobService) StartMiningJob(ctx context.Context, userID, monsterID int, oreType OreType) (int, error) {
 	// check if monster is not occupied
 	_, err := s.jobStorage.GetJobByMonster(ctx, monsterID)
 	if err != nil && !errors.Is(err, storage.ErrNotFound) {
@@ -75,7 +103,7 @@ func (s *JobService) StartWoodCuttingJob(ctx context.Context, userID, monsterID 
 	}
 	mon := monster.MonsterFromStorage(storeMon)
 
-	taskDefinition := s.woodContainer.GetWoodCuttingDefinition(treeType)
+	taskDefinition := s.woodContainer.GetMiningDefinition(oreType)
 	if taskDefinition == nil {
 		return -1, fmt.Errorf("get job definition %d: %w", monsterID, service.ErrJobTypeNotFound)
 	}
@@ -86,7 +114,7 @@ func (s *JobService) StartWoodCuttingJob(ctx context.Context, userID, monsterID 
 
 	// start
 
-	id, err := s.jobStorage.StoreNewGatheringJob(ctx, WoodCuttingJobType.String(), userID, monsterID, treeType.String())
+	id, err := s.jobStorage.StoreNewGatheringJob(ctx, MiningJobType.String(), userID, monsterID, oreType.String())
 	if err != nil {
 		return -1, err
 	}
@@ -95,22 +123,40 @@ func (s *JobService) StartWoodCuttingJob(ctx context.Context, userID, monsterID 
 
 //getJob
 
-func (s *JobService) GetWoodcuttingJob(ctx context.Context, id int) (*WoodCuttingJob, error) {
+func (s *JobService) GetMiningJob(ctx context.Context, id int) (*MiningJob, error) {
 	job, err := s.jobStorage.GetGatheringJobByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("get job entry for jobID %d: %w", id, err)
 	}
-	return FromWoodcuttingJob(job), nil
+	return FromMiningJob(job), nil
 }
 
-func (s *JobService) UpdateWoodcuttingJob(ctx context.Context, id int) error {
+func (s *JobService) StopMiningJob(ctx context.Context, id int) error {
 	// check if job exists
-	job, err := s.GetWoodcuttingJob(ctx, id)
+	job, err := s.jobStorage.GetJobByID(ctx, id)
+	if err != nil && !errors.Is(err, storage.ErrNotFound) {
+		return fmt.Errorf("get job entry for jobID %d: %w", job.ID, err)
+	}
+	if err != nil {
+		return fmt.Errorf("get job entry for jobID %d: %w", id, err)
+	}
+
+	// remove job
+	err = s.jobStorage.DeleteGatheringJob(ctx, id)
+	if err != nil {
+		return fmt.Errorf("delete job entry for jobID %d: %w", id, err)
+	}
+	return nil
+}
+
+func (s *JobService) UpdateMiningJob(ctx context.Context, id int) error {
+	// check if job exists
+	job, err := s.GetMiningJob(ctx, id)
 	if err != nil {
 		return fmt.Errorf("get job entry for jobID %d: %w", id, err)
 	}
 	now := time.Now()
-	jobDefintion := s.woodContainer.GetWoodCuttingDefinition(job.TreeType)
+	jobDefintion := s.woodContainer.GetMiningDefinition(job.OreType)
 	executionCount := calculateTicks(job.Job, jobDefintion.Duration, now)
 
 	rewards := calculateRewards(jobDefintion.Rewards, executionCount)
@@ -130,32 +176,4 @@ func (s *JobService) UpdateWoodcuttingJob(ctx context.Context, id int) error {
 		return fmt.Errorf("update job entry for jobID %d: %w", id, err)
 	}
 	return nil
-
-}
-
-func toInventoryEntries(userId int, item []inventory.Item) []storage.InventoryEntry {
-	entries := []storage.InventoryEntry{}
-	for _, i := range item {
-		entries = append(entries, storage.InventoryEntry{
-			UserID:    userId,
-			ItemDefID: i.ItemDefID,
-			Quantity:  i.Quantity,
-		})
-	}
-	return entries
-}
-
-func calculateRewards(rewards Reward, executionCount int) Reward {
-
-	var rewardItems = []inventory.Item{}
-	for _, item := range rewards.Items {
-		rewardItems = append(rewardItems, inventory.Item{
-			Quantity:  item.Quantity * executionCount,
-			ItemDefID: item.ItemDefID,
-		})
-	}
-	return Reward{
-		Items: rewardItems,
-		Exp:   rewards.Exp * executionCount,
-	}
 }

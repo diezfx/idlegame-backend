@@ -107,9 +107,9 @@ func (c *DB) WithTx(ctx context.Context, fn func(tx Querier) error) error {
 		return err
 	}
 	defer func() {
-		if v := recover(); v != nil {
-			_ = tx.Rollback()
-			panic(v)
+		if err != nil {
+			err := tx.Rollback()
+			logger.Error(ctx, err).Msg("failed transaction rollback")
 		}
 	}()
 

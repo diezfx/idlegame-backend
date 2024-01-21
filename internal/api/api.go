@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -50,9 +49,19 @@ func InitAPI(cfg *config.Config, jobService JobService, inventoryService Invento
 
 	r.GET("/monsters/:id", api.GetMonster)
 	r.GET("/jobs/:id", api.GetJob)
-	r.POST("/jobs/woodcutting", api.PostWoodcuttingJob)
-	r.GET("/jobs/woodcutting/:id", api.GetWoodcuttingJob)
-	r.DELETE("/jobs/woodcutting/:id", api.DeleteWoodcuttingJob)
+	woodcuttingRouter := r.Group("/jobs/woodcutting")
+	woodcuttingRouter.POST("/", api.PostWoodcuttingJob)
+	woodcuttingRouter.GET("/:id", api.GetWoodcuttingJob)
+
+	miningRouter := r.Group("/jobs/mining")
+	miningRouter.POST("/", api.PostMiningJob)
+	miningRouter.GET("/:id", api.GetMiningJob)
+
+	harvestingRouter := r.Group("/jobs/harvesting")
+	harvestingRouter.POST("/", api.PostHarvestingJob)
+	harvestingRouter.GET("/:id", api.GetHarvestingJob)
+
+	r.DELETE("/jobs/:id", api.DeleteJob)
 	r.GET("/inventory/:userID", api.GetInventory)
 	return &http.Server{
 		Handler: mr,
@@ -61,39 +70,6 @@ func InitAPI(cfg *config.Config, jobService JobService, inventoryService Invento
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
-}
-
-// postwoodcuttingjob
-func (api *APIHandler) PostWoodcuttingJob(ctx *gin.Context) {
-	var req StartWoodCuttingJobRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		handleError(ctx, errInvalidInput)
-		return
-	}
-	resp, err := api.jobService.StartWoodCuttingJob(ctx, req.UserID, req.Monster, req.TreeType)
-	if err != nil {
-		handleError(ctx, err)
-		return
-	}
-	// resource created
-	// set header to url with id
-	ctx.Header("Location", fmt.Sprintf("/api/v1.0/jobs/woodcutting/%d", resp))
-	ctx.JSON(http.StatusCreated, resp)
-}
-
-func (api *APIHandler) GetWoodcuttingJob(ctx *gin.Context) {
-	idStr := ctx.Param("id")
-	id, err := strconv.Atoi(idStr)
-	if idStr == "" || err != nil {
-		handleError(ctx, errInvalidInput)
-		return
-	}
-	resp, err := api.jobService.GetWoodcuttingJob(ctx, id)
-	if err != nil {
-		handleError(ctx, err)
-		return
-	}
-	ctx.JSON(http.StatusOK, resp)
 }
 
 func (api *APIHandler) GetJob(ctx *gin.Context) {
@@ -112,14 +88,14 @@ func (api *APIHandler) GetJob(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, resp)
 }
 
-func (api *APIHandler) DeleteWoodcuttingJob(ctx *gin.Context) {
+func (api *APIHandler) DeleteJob(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if idStr == "" || err != nil {
 		handleError(ctx, errInvalidInput)
 		return
 	}
-	err = api.jobService.StopWoodCuttingJob(ctx, id)
+	err = api.jobService.StopJob(ctx, id)
 	if err != nil {
 		handleError(ctx, err)
 		return

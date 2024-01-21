@@ -26,13 +26,14 @@ CREATE TABLE job_monsters (
 	  REFERENCES jobs(id)
 );
 
-CREATE TABLE woodcutting_jobs (
+CREATE TABLE gathering_jobs (
     job_id SERIAL PRIMARY KEY,
-    tree_type TEXT NOT NULL,
+    gathering_type TEXT NOT NULL,
     CONSTRAINT fk_job
       FOREIGN KEY(job_id) 
 	    REFERENCES jobs(id)
 );
+
 
 CREATE TABLE monsters(
     id SERIAL PRIMARY KEY,
@@ -40,6 +41,7 @@ CREATE TABLE monsters(
     monster_def_id integer NOT NULL,
     experience integer NOT NULL
 );
+
 
 CREATE TABLE inventory_items(
     user_id integer NOT NULL,

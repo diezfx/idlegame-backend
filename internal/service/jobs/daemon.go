@@ -17,6 +17,8 @@ type Daemon struct {
 type DaemonJobService interface {
 	GetJobs(ctx context.Context) ([]Job, error)
 	UpdateWoodcuttingJob(ctx context.Context, id int) error
+	UpdateMiningJob(ctx context.Context, id int) error
+	UpdateHarvestingJob(ctx context.Context, id int) error
 }
 
 func NewDaemon(jobService DaemonJobService) *Daemon {
@@ -47,6 +49,20 @@ func (d *Daemon) Run(ctx context.Context) error {
 					err = d.jobService.UpdateWoodcuttingJob(ctx, job.ID)
 					if err != nil {
 						logger.Error(ctx, err).Msg("update woodcutting job")
+						return err
+					}
+				}
+				if job.JobType == MiningJobType.String() {
+					err = d.jobService.UpdateMiningJob(ctx, job.ID)
+					if err != nil {
+						logger.Error(ctx, err).Msg("update mining job")
+						return err
+					}
+				}
+				if job.JobType == HarvestingJobType.String() {
+					err = d.jobService.UpdateHarvestingJob(ctx, job.ID)
+					if err != nil {
+						logger.Error(ctx, err).Msg("update harvesting job")
 						return err
 					}
 				}
