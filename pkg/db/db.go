@@ -101,8 +101,8 @@ func (q *txQuerier) Exec(ctx context.Context, query string, args ...any) (sql.Re
 	return q.execFunc(ctx, query, args...)
 }
 
-func (c *DB) WithTx(ctx context.Context, fn func(tx Querier) error) error {
-	tx, err := c.client.BeginTx(ctx, &sql.TxOptions{})
+func (db *DB) WithTx(ctx context.Context, fn func(tx Querier) error) error {
+	tx, err := db.client.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		return err
 	}
@@ -116,13 +116,13 @@ func (c *DB) WithTx(ctx context.Context, fn func(tx Querier) error) error {
 	// wrap tx in a querier anymous func
 	wrappedTx := &txQuerier{
 		getFunc: func(ctx context.Context, dest any, query string, args ...any) error {
-			return c.Get(ctx, dest, query, args...)
+			return db.Get(ctx, dest, query, args...)
 		},
 		selectFunc: func(ctx context.Context, dest any, query string, args ...any) error {
-			return c.Select(ctx, dest, query, args...)
+			return db.Select(ctx, dest, query, args...)
 		},
 		execFunc: func(ctx context.Context, query string, args ...any) (sql.Result, error) {
-			return c.client.ExecContext(ctx, query, args...)
+			return db.client.ExecContext(ctx, query, args...)
 		},
 	}
 

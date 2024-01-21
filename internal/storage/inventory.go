@@ -8,14 +8,14 @@ import (
 	"github.com/diezfx/idlegame-backend/pkg/db"
 )
 
-func (s *Client) GetItem(ctx context.Context, userID int, itemID string) (*InventoryEntry, error) {
+func (c *Client) GetItem(ctx context.Context, userID int, itemID string) (*InventoryEntry, error) {
 	const getItemQuantityQuery = `
 	SELECT quantity,item_def_id,user_id
 	FROM inventory_items
 	WHERE user_id=$1 AND item_def_id=$2
 	`
 	var res InventoryEntry
-	err := s.dbClient.Get(ctx, &res, getItemQuantityQuery, userID, itemID)
+	err := c.dbClient.Get(ctx, &res, getItemQuantityQuery, userID, itemID)
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	}
@@ -26,7 +26,7 @@ func (s *Client) GetItem(ctx context.Context, userID int, itemID string) (*Inven
 	return &res, nil
 }
 
-func (s *Client) AddItem(ctx context.Context, userID int, itemID string, quantity int) (int, error) {
+func (c *Client) AddItem(ctx context.Context, userID int, itemID string, quantity int) (int, error) {
 	const addItemQuery = `
 	INSERT INTO inventory_items
 	(user_id, item_def_id, quantity)
@@ -38,15 +38,14 @@ func (s *Client) AddItem(ctx context.Context, userID int, itemID string, quantit
 	`
 	var newQuantity int
 
-	err := s.dbClient.Get(ctx, &newQuantity, addItemQuery, addItemQuery, userID, itemID, quantity)
+	err := c.dbClient.Get(ctx, &newQuantity, addItemQuery, addItemQuery, userID, itemID, quantity)
 	if err != nil {
 		return 0, fmt.Errorf("add item: %w", err)
 	}
 	return newQuantity, nil
 }
 
-func (s *Client) AddItems(ctx context.Context, items []InventoryEntry) error {
-
+func (c *Client) AddItems(ctx context.Context, items []InventoryEntry) error {
 	const addItemQuery = `
 	INSERT INTO inventory_items
 	(user_id, item_def_id, quantity)
@@ -57,7 +56,7 @@ func (s *Client) AddItems(ctx context.Context, items []InventoryEntry) error {
 	RETURNING quantity
 	`
 
-	return s.dbClient.WithTx(ctx, func(tx db.Querier) error {
+	return c.dbClient.WithTx(ctx, func(tx db.Querier) error {
 		var newQuantity int
 		for _, item := range items {
 			err := tx.Get(ctx, &newQuantity, addItemQuery, item.UserID, item.ItemDefID, item.Quantity)
@@ -69,14 +68,14 @@ func (s *Client) AddItems(ctx context.Context, items []InventoryEntry) error {
 	})
 }
 
-func (s *Client) GetInventory(ctx context.Context, userID int) ([]InventoryEntry, error) {
+func (c *Client) GetInventory(ctx context.Context, userID int) ([]InventoryEntry, error) {
 	var res []InventoryEntry
 	const getInventoryQuery = `
 	SELECT quantity,item_def_id,user_id
 	FROM inventory_items
 	WHERE user_id=$1
 	`
-	err := s.dbClient.Select(ctx, &res, getInventoryQuery, userID)
+	err := c.dbClient.Select(ctx, &res, getInventoryQuery, userID)
 	if err != nil {
 		return nil, fmt.Errorf("select inventory: %w", err)
 	}

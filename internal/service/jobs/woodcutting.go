@@ -1,3 +1,4 @@
+//nolint:dupl // fine for now
 package jobs
 
 import (
@@ -90,7 +91,7 @@ func (s *JobService) StartWoodCuttingJob(ctx context.Context, userID, monsterID 
 	return id, nil
 }
 
-//getJob
+// getJob
 
 func (s *JobService) GetWoodcuttingJob(ctx context.Context, id int) (*WoodCuttingJob, error) {
 	job, err := s.jobStorage.GetJobByID(ctx, id)
@@ -128,14 +129,13 @@ func (s *JobService) UpdateWoodcuttingJob(ctx context.Context, id int) error {
 		return fmt.Errorf("update job entry for jobID %d: %w", id, err)
 	}
 	return nil
-
 }
 
-func toInventoryEntries(userId int, item []inventory.Item) []storage.InventoryEntry {
+func toInventoryEntries(userID int, itm []inventory.Item) []storage.InventoryEntry {
 	entries := []storage.InventoryEntry{}
-	for _, i := range item {
+	for _, i := range itm {
 		entries = append(entries, storage.InventoryEntry{
-			UserID:    userId,
+			UserID:    userID,
 			ItemDefID: i.ItemDefID,
 			Quantity:  i.Quantity,
 		})
@@ -144,7 +144,6 @@ func toInventoryEntries(userId int, item []inventory.Item) []storage.InventoryEn
 }
 
 func calculateRewards(rewards Reward, executionCount int) Reward {
-
 	var rewardItems = []inventory.Item{}
 	for _, item := range rewards.Items {
 		rewardItems = append(rewardItems, inventory.Item{

@@ -30,7 +30,6 @@ func NewDaemon(jobService DaemonJobService) *Daemon {
 // TODO use cronlibrary
 // TODO err chan
 func (d *Daemon) Run(ctx context.Context) error {
-
 	ticker := time.NewTicker(tickTime)
 	for {
 		select {
@@ -66,10 +65,7 @@ func (d *Daemon) Run(ctx context.Context) error {
 						return err
 					}
 				}
-
 			}
 		}
-
 	}
-
 }

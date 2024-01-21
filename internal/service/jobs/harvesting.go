@@ -1,3 +1,4 @@
+//nolint:dupl // fine for now
 package jobs
 
 import (
@@ -13,9 +14,10 @@ import (
 	"github.com/diezfx/idlegame-backend/internal/storage"
 )
 
+//nolint:dupl // fine for now
 var harvestingJobs = []JobDefinition{
 
-	JobDefinition{
+	{
 		JobDefID:         item.WheatCropType.String(),
 		JobType:          HarvestingJobType,
 		LevelRequirement: 1,
@@ -27,7 +29,7 @@ var harvestingJobs = []JobDefinition{
 			Exp: 1,
 		},
 	},
-	JobDefinition{
+	{
 		JobDefID:         item.CarrotCropType.String(),
 		JobType:          HarvestingJobType,
 		LevelRequirement: 2,
@@ -39,7 +41,7 @@ var harvestingJobs = []JobDefinition{
 			Exp: 2,
 		},
 	},
-	JobDefinition{
+	{
 		JobDefID:         item.PotatoCropType.String(),
 		JobType:          HarvestingJobType,
 		LevelRequirement: 3,
@@ -53,6 +55,7 @@ var harvestingJobs = []JobDefinition{
 	},
 }
 
+//nolint:dupl // fine for now
 func (s *JobService) StartHarvestingJob(ctx context.Context, userID, monsterID int, cropType item.CropType) (int, error) {
 	// check if monster is not occupied
 	_, err := s.jobStorage.GetJobByMonster(ctx, monsterID)
@@ -67,7 +70,7 @@ func (s *JobService) StartHarvestingJob(ctx context.Context, userID, monsterID i
 
 	storeMon, err := s.monsterStorage.GetMonsterByID(ctx, monsterID)
 	if err != nil {
-		return -1, fmt.Errorf("get monster information for monsterID %d: %w", cropType, err)
+		return -1, fmt.Errorf("get monster information for monsterID %d: %w", monsterID, err)
 	}
 	mon := monster.MonsterFromStorage(storeMon)
 
@@ -89,7 +92,7 @@ func (s *JobService) StartHarvestingJob(ctx context.Context, userID, monsterID i
 	return id, nil
 }
 
-//getJob
+// getJob
 
 func (s *JobService) GetHarvestingJob(ctx context.Context, id int) (*HarvestingJob, error) {
 	job, err := s.jobStorage.GetJobByID(ctx, id)

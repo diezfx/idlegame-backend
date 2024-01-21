@@ -12,7 +12,7 @@ type Item struct {
 	ItemDefID string
 }
 
-func ToItemFromStorage(i *storage.InventoryEntry) *Item {
+func ToItemFromStorage(i storage.InventoryEntry) *Item {
 	return &Item{
 		Quantity:  i.Quantity,
 		ItemDefID: i.ItemDefID,
@@ -22,7 +22,7 @@ func ToItemFromStorage(i *storage.InventoryEntry) *Item {
 func ToInventoryFromStorageEntries(entries []storage.InventoryEntry, userID int) *Inventory {
 	items := make([]Item, 0, len(entries))
 	for _, entry := range entries {
-		items = append(items, *ToItemFromStorage(&entry))
+		items = append(items, *ToItemFromStorage(entry))
 	}
 	return &Inventory{
 		UserID: userID,

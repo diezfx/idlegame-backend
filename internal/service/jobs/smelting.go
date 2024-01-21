@@ -47,7 +47,6 @@ func (s *JobService) StartSmeltingJob(ctx context.Context, userID, monsterID int
 		return -1, err
 	}
 	return id, nil
-
 }
 
 type Ingredient struct {
@@ -62,7 +61,7 @@ type Recipes struct {
 	OutputItem  item.Item
 }
 
-var smeltingJobs = []Recipes{
+var smeltingJobs = []*Recipes{
 	{
 		JobDefinition: JobDefinition{
 			JobDefID:         string(item.StoneBarType),

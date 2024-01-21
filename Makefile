@@ -1,4 +1,4 @@
-GOLANG_CI_VERSION=v1.54.0
+GOLANG_CI_VERSION=v1.55.0
 
 fmt:
 	gofumpt -l -w .

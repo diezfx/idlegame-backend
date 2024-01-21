@@ -28,7 +28,7 @@ type JobContainer struct {
 	miningDefs      []JobDefinition
 	harvestingDefs  []JobDefinition
 
-	smeltingDefs []Recipes
+	smeltingDefs []*Recipes
 }
 
 // what kind of wood
@@ -85,7 +85,6 @@ type JobDefinition struct {
 }
 
 func (c *JobContainer) GetGatheringJobDefinition(jobType JobType, jobDefID string) *JobDefinition {
-
 	if jobType == WoodCuttingJobType {
 		for _, def := range c.woodcuttingDefs {
 			if def.JobDefID == jobDefID {
@@ -115,7 +114,7 @@ func (c *JobContainer) GetGatheringJobDefinition(jobType JobType, jobDefID strin
 func (c *JobContainer) GetSmeltingJobDefinition(jobDefID string) *Recipes {
 	for _, def := range c.smeltingDefs {
 		if def.JobDefID == jobDefID {
-			return &def
+			return def
 		}
 	}
 	return nil

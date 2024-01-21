@@ -83,12 +83,11 @@ func (c *Client) GetJobByID(ctx context.Context, id int) (*Job, error) {
 	return &job, nil
 }
 
-func (c *Client) StoreNewJob(ctx context.Context, jobType string, userID, monsterID int, jobDefId string) (int, error) {
+func (c *Client) StoreNewJob(ctx context.Context, jobType string, userID, monsterID int, jobDefID string) (int, error) {
 	var jobID int
 
 	err := c.dbClient.WithTx(ctx, func(tx db.Querier) error {
-
-		err := tx.Get(ctx, &jobID, insertJobQuery, jobDefId, userID, time.Now(), jobType)
+		err := tx.Get(ctx, &jobID, insertJobQuery, jobDefID, userID, time.Now(), jobType)
 		if err != nil {
 			return fmt.Errorf("insert job: %w", err)
 		}

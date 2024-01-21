@@ -24,7 +24,7 @@ const (
 type CropType string
 
 const (
-	//low quality crop
+	// low quality crop
 	WheatCropType  CropType = "Wheat"
 	CarrotCropType CropType = "Carrot"
 	PotatoCropType CropType = "Potato"

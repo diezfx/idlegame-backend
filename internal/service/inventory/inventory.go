@@ -22,7 +22,6 @@ func (s *Service) AddItem(ctx context.Context, userID int, itemID string, quanti
 }
 
 func (s *Service) RemoveItem(ctx context.Context, userID int, itemID string, removeQuantity int) (int, error) {
-
 	currentQuantity, err := s.storage.GetItem(ctx, userID, itemID)
 	if err != nil {
 		return 0, fmt.Errorf("get quantity: %w", err)
@@ -39,7 +38,7 @@ func (s *Service) GetItem(ctx context.Context, userID int, itemID string) (*Item
 	if err != nil {
 		return nil, fmt.Errorf("get item: %w", err)
 	}
-	return ToItemFromStorage(item), nil
+	return ToItemFromStorage(*item), nil
 }
 
 func (s *Service) GetInventory(ctx context.Context, userID int) (*Inventory, error) {

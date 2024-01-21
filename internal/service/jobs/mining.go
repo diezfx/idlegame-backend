@@ -1,3 +1,4 @@
+//nolint:dupl // fine for now
 package jobs
 
 import (
@@ -14,7 +15,7 @@ import (
 )
 
 var miningJobs = []JobDefinition{
-	JobDefinition{
+	{
 		JobDefID:         item.StoneOreType.String(),
 		JobType:          MiningJobType,
 		LevelRequirement: 1,
@@ -26,7 +27,7 @@ var miningJobs = []JobDefinition{
 			Exp: 1,
 		},
 	},
-	JobDefinition{
+	{
 		JobDefID:         item.CopperOreType.String(),
 		JobType:          MiningJobType,
 		LevelRequirement: 2,
@@ -38,7 +39,7 @@ var miningJobs = []JobDefinition{
 			Exp: 2,
 		},
 	},
-	JobDefinition{
+	{
 		JobDefID:         item.IronOreType.String(),
 		JobType:          MiningJobType,
 		LevelRequirement: 3,
@@ -50,7 +51,7 @@ var miningJobs = []JobDefinition{
 			Exp: 3,
 		},
 	},
-	JobDefinition{
+	{
 		JobDefID:         item.GoldOreType.String(),
 		JobType:          MiningJobType,
 		LevelRequirement: 4,
@@ -62,7 +63,7 @@ var miningJobs = []JobDefinition{
 			Exp: 4,
 		},
 	},
-	JobDefinition{
+	{
 		JobDefID:         item.DiamondOreType.String(),
 		JobType:          MiningJobType,
 		LevelRequirement: 5,
@@ -112,7 +113,7 @@ func (s *JobService) StartMiningJob(ctx context.Context, userID, monsterID int, 
 	return id, nil
 }
 
-//getJob
+// getJob
 
 func (s *JobService) GetMiningJob(ctx context.Context, id int) (*MiningJob, error) {
 	job, err := s.jobStorage.GetJobByID(ctx, id)

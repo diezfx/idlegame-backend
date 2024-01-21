@@ -21,7 +21,7 @@ func main() {
 	}
 
 	go func() {
-		err := daemon.Run(ctx)
+		err = daemon.Run(ctx)
 		if err != nil {
 			logger.Fatal(ctx, err).Msg("failed daemon")
 		}
