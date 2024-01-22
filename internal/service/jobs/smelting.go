@@ -82,7 +82,7 @@ var smeltingJobs = []*Recipes{
 			Duration:         time.Second * 3,
 			Rewards: Reward{
 				Items: []inventory.Item{
-					{ItemDefID: string(item.StoneBarType), Quantity: 2},
+					{ItemDefID: string(item.StoneBarType), Quantity: 1},
 				},
 				Exp: 1,
 			},
@@ -122,15 +122,16 @@ func (s *JobService) UpdateSmeltingJob(ctx context.Context, id int) error {
 		if err != nil {
 			return fmt.Errorf("delete job entry for jobID %d: %w", id, err)
 		}
+		executionCount = maxRuns
 	}
 
 	if maxRuns == 0 {
 		return nil
 	}
 
-	rewards := calculateRewards(jobDefintion.Rewards, maxRuns)
+	rewards := calculateRewards(jobDefintion.Rewards, executionCount)
 	//item to get
-	costs := calculateCosts(jobDefintion.Ingredients, maxRuns)
+	costs := calculateCosts(jobDefintion.Ingredients, executionCount)
 
 	err = s.inventoryStorage.AddItems(ctx, costToInventoryEntries(job.UserID, costs))
 	if err != nil {

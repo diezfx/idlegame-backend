@@ -8,7 +8,6 @@ import (
 
 	"github.com/diezfx/idlegame-backend/internal/service/item"
 	"github.com/diezfx/idlegame-backend/internal/storage"
-	"github.com/diezfx/idlegame-backend/pkg/logger"
 )
 
 type JobService struct {
@@ -118,15 +117,10 @@ func (s *JobService) StopJob(ctx context.Context, id int) error {
 		return fmt.Errorf("get job entry for jobID %d: %w", id, err)
 	}
 
-	if JobType(job.JobType) == WoodCuttingJobType || JobType(job.JobType) == MiningJobType || JobType(job.JobType) == HarvestingJobType {
-		// remove job
-		err = s.jobStorage.DeleteJobByID(ctx, id)
-		if err != nil {
-			return fmt.Errorf("delete job entry for jobID %d: %w", id, err)
-		}
-		return nil
-	} else {
-		logger.Fatal(ctx, nil).String("jobType", job.JobType).Msg("not implemented yet")
+	// remove job
+	err = s.jobStorage.DeleteJobByID(ctx, id)
+	if err != nil {
+		return fmt.Errorf("delete job entry for jobID %d: %w", id, err)
 	}
 	return nil
 }
