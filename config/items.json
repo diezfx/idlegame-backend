@@ -1,0 +1,137 @@
+{
+    "items": [
+        {
+            "id": "spruce",
+            "name": "Spruce",
+            "tags": [
+                "wood"
+            ]
+        },
+        {
+            "id": "birch",
+            "name": "Birch",
+            "tags": [
+                "wood"
+            ]
+        },
+        {
+            "id": "pine",
+            "name": "Pine",
+            "tags": [
+                "wood"
+            ]
+        },
+        {
+            "id": "stone",
+            "name": "Stone",
+            "tags": [
+                "ore"
+            ]
+        },
+        {
+            "id": "copper",
+            "name": "Copper",
+            "tags": [
+                "ore"
+            ]
+        },
+        {
+            "id": "iron",
+            "name": "Iron",
+            "tags": [
+                "ore"
+            ]
+        },
+        {
+            "id": "gold",
+            "name": "Gold",
+            "tags": [
+                "ore"
+            ]
+        },
+        {
+            "id": "diamond",
+            "name": "Diamond",
+            "tags": [
+                "ore"
+            ]
+        },
+        {
+            "id": "wheat",
+            "name": "Wheat",
+            "tags": [
+                "crop"
+            ]
+        },
+        {
+            "id": "carrot",
+            "name": "Carrot",
+            "tags": [
+                "crop"
+            ]
+        },
+        {
+            "id": "potato",
+            "name": "Potato",
+            "tags": [
+                "crop"
+            ]
+        },
+        {
+            "id": "stone_bar",
+            "name": "Stone Bar",
+            "tags": [
+                "metal_bar"
+            ]
+        },
+        {
+            "id": "copperBar",
+            "name": "Copper Bar",
+            "tags": [
+                "metal_bar"
+            ]
+        },
+        {
+            "id": "ironBar",
+            "name": "Iron Bar",
+            "tags": [
+                "metal_bar"
+            ]
+        },
+        {
+            "id": "goldBar",
+            "name": "Gold Bar",
+            "tags": [
+                "metal_bar"
+            ]
+        },
+        {
+            "id": "diamondBar",
+            "name": "Diamond Bar",
+            "tags": [
+                "metal_bar"
+            ]
+        },
+        {
+            "id": "sprucePlank",
+            "name": "Spruce Plank",
+            "tags": [
+                "plank"
+            ]
+        },
+        {
+            "id": "birchPlank",
+            "name": "Birch Plank",
+            "tags": [
+                "plank"
+            ]
+        },
+        {
+            "id": "pineBlank",
+            "name": "Pine Plank",
+            "tags": [
+                "plank"
+            ]
+        }
+    ]
+}

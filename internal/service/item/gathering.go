@@ -51,3 +51,9 @@ const (
 	GoldBarType    Item = "GoldBar"
 	DiamondBarType Item = "DiamondBar"
 )
+
+const (
+	SpruceBlankType Item = "SpruceLog"
+	BirchLogType    Item = "BirchLog"
+	PineLogType     Item = "PineLog"
+)

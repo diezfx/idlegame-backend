@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/diezfx/idlegame-backend/pkg/logger"
+	"github.com/diezfx/idlegame-backend/pkg/masterdata"
 )
 
 const tickTime = time.Second
@@ -43,28 +44,28 @@ func (d *Daemon) Run(ctx context.Context) error {
 				return err
 			}
 			for _, job := range jobs {
-				if job.JobType == WoodCuttingJobType.String() {
+				if job.JobType == masterdata.WoodCuttingJobType.String() {
 					err = d.jobService.UpdateWoodcuttingJob(ctx, job.ID)
 					if err != nil {
 						logger.Error(ctx, err).Msg("update woodcutting job")
 						return err
 					}
 				}
-				if job.JobType == MiningJobType.String() {
+				if job.JobType == masterdata.MiningJobType.String() {
 					err = d.jobService.UpdateMiningJob(ctx, job.ID)
 					if err != nil {
 						logger.Error(ctx, err).Msg("update mining job")
 						return err
 					}
 				}
-				if job.JobType == HarvestingJobType.String() {
+				if job.JobType == masterdata.HarvestingJobType.String() {
 					err = d.jobService.UpdateHarvestingJob(ctx, job.ID)
 					if err != nil {
 						logger.Error(ctx, err).Msg("update harvesting job")
 						return err
 					}
 				}
-				if job.JobType == SmeltingJobType.String() {
+				if job.JobType == masterdata.SmeltingJobType.String() {
 					err = d.jobService.UpdateSmeltingJob(ctx, job.ID)
 					if err != nil {
 						logger.Error(ctx, err).Msg("update smelting job")

@@ -9,13 +9,14 @@ import (
 	"github.com/diezfx/idlegame-backend/internal/service"
 	"github.com/diezfx/idlegame-backend/internal/service/item"
 	"github.com/diezfx/idlegame-backend/internal/storage"
+	"github.com/diezfx/idlegame-backend/pkg/masterdata"
 )
 
 type JobService struct {
 	jobStorage       JobStorage
 	monsterStorage   MonsterStorage
 	inventoryStorage InventoryStorage
-	jobContainer     JobContainer
+	jobContainer     masterdata.JobContainer
 }
 
 func New(jobStorage JobStorage, monsterStorage MonsterStorage, inventoryStorage InventoryStorage,
@@ -24,7 +25,7 @@ func New(jobStorage JobStorage, monsterStorage MonsterStorage, inventoryStorage 
 		jobStorage:       jobStorage,
 		monsterStorage:   monsterStorage,
 		inventoryStorage: inventoryStorage,
-		jobContainer:     *InitJobs(itemContainer),
+		jobContainer:     *masterdata.InitJobs(itemContainer),
 	}
 }
 
@@ -39,10 +40,6 @@ func (s *JobService) GetJob(ctx context.Context, id int) (*Job, error) {
 	}
 	j := fromJob(*storageJob)
 	return &j, nil
-}
-
-func (t JobType) String() string {
-	return string(t)
 }
 
 func (s *JobService) GetJobs(ctx context.Context) ([]Job, error) {
@@ -80,32 +77,6 @@ func calculateTicks(job Job, duration time.Duration, now time.Time) int {
 		}
 	}
 	return executionCount
-}
-
-func InitJobs(itemContainer *item.ItemContainer) *JobContainer {
-	// Woodcutting
-	itemContainer.AddItemDefinition(item.ItemDefinition{ID: item.SpruceType.String(), Tags: []string{}})
-	itemContainer.AddItemDefinition(item.ItemDefinition{ID: item.BirchType.String(), Tags: []string{}})
-	itemContainer.AddItemDefinition(item.ItemDefinition{ID: item.PineType.String(), Tags: []string{}})
-
-	// Mining
-	itemContainer.AddItemDefinition(item.ItemDefinition{ID: item.StoneOreType.String(), Tags: []string{}})
-	itemContainer.AddItemDefinition(item.ItemDefinition{ID: item.CopperOreType.String(), Tags: []string{}})
-	itemContainer.AddItemDefinition(item.ItemDefinition{ID: item.IronOreType.String(), Tags: []string{}})
-	itemContainer.AddItemDefinition(item.ItemDefinition{ID: item.GoldOreType.String(), Tags: []string{}})
-	itemContainer.AddItemDefinition(item.ItemDefinition{ID: item.DiamondOreType.String(), Tags: []string{}})
-
-	// Harvesting
-	itemContainer.AddItemDefinition(item.ItemDefinition{ID: item.CarrotCropType.String(), Tags: []string{}})
-	itemContainer.AddItemDefinition(item.ItemDefinition{ID: item.PotatoCropType.String(), Tags: []string{}})
-	itemContainer.AddItemDefinition(item.ItemDefinition{ID: item.WheatCropType.String(), Tags: []string{}})
-
-	return &JobContainer{
-		woodcuttingDefs: woodcuttingJobs,
-		miningDefs:      miningJobs,
-		harvestingDefs:  harvestingJobs,
-		smeltingDefs:    smeltingJobs,
-	}
 }
 
 func (s *JobService) StopJob(ctx context.Context, id int) error {

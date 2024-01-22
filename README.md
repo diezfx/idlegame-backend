@@ -45,6 +45,8 @@ migrate create -dir db/migrations -ext sql -seq -digits 4 {name}
 
 ## PreProcessing
 - Smelting(Strength)
+- Carpeting
+- FoodProcessing
 
 
 
@@ -64,6 +66,11 @@ migrate create -dir db/migrations -ext sql -seq -digits 4 {name}
 - Collect exp by doing a job(monster get stronger)
 
 
+## Traveling
+- different places, which allow collecting of different stuff
+- flying mounts help shorten time(endurance)
+- non global market stuff can still be bought but with a delivery fee
+
 ## Future
 - battles for cities
 - market place
@@ -75,4 +82,6 @@ migrate create -dir db/migrations -ext sql -seq -digits 4 {name}
 ## Next steps
 - multiple jobs
 - complex jobs with item consumption and cancellation
+- integration testing
+- master data in json files
 - elements to monsters and talents

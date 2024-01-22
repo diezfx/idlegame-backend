@@ -1,0 +1,19 @@
+{
+    "monsters": [
+        {
+            "id": 1,
+            "name": "schiggo",
+            "type": "water"
+        },
+        {
+            "id": 2,
+            "name": "bisa",
+            "type": "earth"
+        },
+        {
+            "id": 3,
+            "name": "glumander",
+            "type": "fire"
+        }
+    ]
+}

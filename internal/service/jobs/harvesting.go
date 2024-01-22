@@ -8,54 +8,12 @@ import (
 	"time"
 
 	"github.com/diezfx/idlegame-backend/internal/service"
-	"github.com/diezfx/idlegame-backend/internal/service/inventory"
 	"github.com/diezfx/idlegame-backend/internal/service/item"
 	"github.com/diezfx/idlegame-backend/internal/service/monster"
 	"github.com/diezfx/idlegame-backend/internal/storage"
+	"github.com/diezfx/idlegame-backend/pkg/masterdata"
 )
 
-//nolint:dupl // fine for now
-var harvestingJobs = []JobDefinition{
-
-	{
-		JobDefID:         item.WheatCropType.String(),
-		JobType:          HarvestingJobType,
-		LevelRequirement: 1,
-		Duration:         time.Second * 5,
-		Rewards: Reward{
-			Items: []inventory.Item{
-				{ItemDefID: item.WheatCropType.String(), Quantity: 1},
-			},
-			Exp: 1,
-		},
-	},
-	{
-		JobDefID:         item.CarrotCropType.String(),
-		JobType:          HarvestingJobType,
-		LevelRequirement: 2,
-		Duration:         time.Second * 5,
-		Rewards: Reward{
-			Items: []inventory.Item{
-				{ItemDefID: item.CarrotCropType.String(), Quantity: 1},
-			},
-			Exp: 2,
-		},
-	},
-	{
-		JobDefID:         item.PotatoCropType.String(),
-		JobType:          HarvestingJobType,
-		LevelRequirement: 3,
-		Duration:         time.Second * 5,
-		Rewards: Reward{
-			Items: []inventory.Item{
-				{ItemDefID: item.PotatoCropType.String(), Quantity: 1},
-			},
-			Exp: 3,
-		},
-	},
-}
-
-//nolint:dupl // fine for now
 func (s *JobService) StartHarvestingJob(ctx context.Context, userID, monsterID int, cropType item.CropType) (int, error) {
 	// check if monster is not occupied
 	_, err := s.jobStorage.GetJobByMonster(ctx, monsterID)
@@ -74,7 +32,7 @@ func (s *JobService) StartHarvestingJob(ctx context.Context, userID, monsterID i
 	}
 	mon := monster.MonsterFromStorage(storeMon)
 
-	taskDefinition := s.jobContainer.GetGatheringJobDefinition(HarvestingJobType, cropType.String())
+	taskDefinition := s.jobContainer.GetGatheringJobDefinition(masterdata.HarvestingJobType, cropType.String())
 	if taskDefinition == nil {
 		return -1, fmt.Errorf("get job definition %d: %w", monsterID, service.ErrJobTypeNotFound)
 	}
@@ -85,7 +43,7 @@ func (s *JobService) StartHarvestingJob(ctx context.Context, userID, monsterID i
 
 	// start
 
-	id, err := s.jobStorage.StoreNewJob(ctx, HarvestingJobType.String(), userID, monsterID, cropType.String())
+	id, err := s.jobStorage.StoreNewJob(ctx, masterdata.HarvestingJobType.String(), userID, monsterID, cropType.String())
 	if err != nil {
 		return -1, err
 	}
@@ -127,7 +85,7 @@ func (s *JobService) UpdateHarvestingJob(ctx context.Context, id int) error {
 		return fmt.Errorf("get job entry for jobID %d: %w", id, err)
 	}
 	now := time.Now()
-	jobDefintion := s.jobContainer.GetGatheringJobDefinition(HarvestingJobType, job.CropType.String())
+	jobDefintion := s.jobContainer.GetGatheringJobDefinition(masterdata.HarvestingJobType, job.CropType.String())
 	executionCount := calculateTicks(job.Job, jobDefintion.Duration, now)
 
 	rewards := calculateRewards(jobDefintion.Rewards, executionCount)

@@ -9,10 +9,10 @@ import (
 
 	"github.com/diezfx/idlegame-backend/internal/service"
 	"github.com/diezfx/idlegame-backend/internal/service/inventory"
-	"github.com/diezfx/idlegame-backend/internal/service/item"
 	"github.com/diezfx/idlegame-backend/internal/service/monster"
 	"github.com/diezfx/idlegame-backend/internal/storage"
 	"github.com/diezfx/idlegame-backend/pkg/logger"
+	"github.com/diezfx/idlegame-backend/pkg/masterdata"
 )
 
 func (s *JobService) StartSmeltingJob(ctx context.Context, userID, monsterID int, jobDefID string) (int, error) {
@@ -54,46 +54,11 @@ func (s *JobService) StartSmeltingJob(ctx context.Context, userID, monsterID int
 
 	// start
 
-	id, err := s.jobStorage.StoreNewJob(ctx, SmeltingJobType.String(), userID, monsterID, jobDefID)
+	id, err := s.jobStorage.StoreNewJob(ctx, masterdata.SmeltingJobType.String(), userID, monsterID, jobDefID)
 	if err != nil {
 		return -1, err
 	}
 	return id, nil
-}
-
-type Ingredient struct {
-	Item  item.Item
-	Count int
-}
-
-type Recipes struct {
-	RecipeID string
-	JobDefinition
-	Ingredients []Ingredient
-	OutputItem  item.Item
-}
-
-var smeltingJobs = []*Recipes{
-	{
-		JobDefinition: JobDefinition{
-			JobDefID:         string(item.StoneBarType),
-			JobType:          SmeltingJobType,
-			LevelRequirement: 1,
-			Duration:         time.Second * 3,
-			Rewards: Reward{
-				Items: []inventory.Item{
-					{ItemDefID: string(item.StoneBarType), Quantity: 1},
-				},
-				Exp: 1,
-			},
-		},
-		Ingredients: []Ingredient{
-			{
-				Item:  item.Item(item.StoneOreType),
-				Count: 2,
-			},
-		},
-	},
 }
 
 func (s *JobService) UpdateSmeltingJob(ctx context.Context, id int) error {
@@ -155,7 +120,7 @@ func (s *JobService) UpdateSmeltingJob(ctx context.Context, id int) error {
 	return nil
 }
 
-func calculateMaxRuns(inventory *inventory.Inventory, jobDef *Recipes) int {
+func calculateMaxRuns(inventory *inventory.Inventory, jobDef *masterdata.Recipes) int {
 	maxRuns := math.MaxInt32
 	for _, cost := range jobDef.Ingredients {
 		found := false

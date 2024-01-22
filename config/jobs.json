@@ -1,0 +1,213 @@
+{
+    "gatheringJobs": [
+        {
+            "id": "spruce",
+            "jobType": "woodcutting",
+            "levelRequirement": 1,
+            "duration": 3,
+            "rewards": {
+                "items": [
+                    {
+                        "id": "spruce",
+                        "quantity": 1
+                    }
+                ],
+                "experience": 1
+            }
+        },
+        {
+            "id": "birch",
+            "jobType": "woodcutting",
+            "levelRequirement": 2,
+            "duration": 3,
+            "rewards": {
+                "items": [
+                    {
+                        "id": "birch",
+                        "quantity": 1
+                    }
+                ],
+                "experience": 2
+            }
+        },
+        {
+            "id": "pine",
+            "jobType": "woodcutting",
+            "levelRequirement": 3,
+            "duration": 3,
+            "rewards": {
+                "items": [
+                    {
+                        "id": "pine",
+                        "quantity": 1
+                    }
+                ],
+                "experience": 3
+            }
+        },
+        {
+            "id": "wheat",
+            "jobType": "harvesting",
+            "levelRequirement": 1,
+            "duration": 3,
+            "rewards": {
+                "items": [
+                    {
+                        "id": "wheat",
+                        "quantity": 1
+                    }
+                ],
+                "experience": 1
+            }
+        },
+        {
+            "id": "carrot",
+            "jobType": "harvesting",
+            "levelRequirement": 2,
+            "duration": 3,
+            "rewards": {
+                "items": [
+                    {
+                        "id": "carrot",
+                        "quantity": 1
+                    }
+                ],
+                "experience": 2
+            }
+        },
+        {
+            "id": "potato",
+            "jobType": "harvesting",
+            "levelRequirement": 3,
+            "duration": 3,
+            "rewards": {
+                "items": [
+                    {
+                        "id": "potato",
+                        "quantity": 1
+                    }
+                ],
+                "experience": 3
+            }
+        },
+        {
+            "id": "stone",
+            "jobType": "mining",
+            "levelRequirement": 1,
+            "duration": 3,
+            "rewards": {
+                "items": [
+                    {
+                        "id": "stone",
+                        "quantity": 1
+                    }
+                ],
+                "experience": 1
+            }
+        },
+        {
+            "id": "copper",
+            "jobType": "mining",
+            "levelRequirement": 2,
+            "duration": 3,
+            "rewards": {
+                "items": [
+                    {
+                        "id": "copper",
+                        "quantity": 1
+                    }
+                ],
+                "experience": 2
+            }
+        },
+        {
+            "id": "iron",
+            "jobType": "mining",
+            "levelRequirement": 3,
+            "duration": 3,
+            "rewards": {
+                "items": [
+                    {
+                        "id": "iron",
+                        "quantity": 1
+                    }
+                ],
+                "experience": 3
+            }
+        },
+        {
+            "id": "gold",
+            "jobType": "mining",
+            "levelRequirement": 4,
+            "duration": 3,
+            "rewards": {
+                "items": [
+                    {
+                        "id": "gold",
+                        "quantity": 1
+                    }
+                ],
+                "experience": 4
+            }
+        },
+        {
+            "id": "diamond",
+            "jobType": "mining",
+            "levelRequirement": 5,
+            "duration": 3,
+            "rewards": {
+                "items": [
+                    {
+                        "id": "diamond",
+                        "quantity": 1
+                    }
+                ],
+                "experience": 5
+            }
+        }
+    ],
+    "processingJobs": [
+        {
+            "id": "stoneBar",
+            "jobType": "smelting",
+            "levelRequirement": 1,
+            "duration": 3,
+            "rewards": {
+                "items": [
+                    {
+                        "id": "stoneBar",
+                        "quantity": 1
+                    }
+                ],
+                "experience": 1
+            },
+            "ingredients": [
+                {
+                    "id": "stone",
+                    "quantity": 1
+                }
+            ]
+        },
+        {
+            "id": "copperBar",
+            "jobType": "smelting",
+            "levelRequirement": 2,
+            "duration": 3,
+            "rewards": {
+                "items": [
+                    {
+                        "id": "copperBar",
+                        "quantity": 1
+                    }
+                ],
+                "experience": 2
+            },
+            "ingredients": [
+                {
+                    "id": "copper",
+                    "quantity": 1
+                }
+            ]
+        }
+    ]
+}

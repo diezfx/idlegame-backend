@@ -8,74 +8,11 @@ import (
 	"time"
 
 	"github.com/diezfx/idlegame-backend/internal/service"
-	"github.com/diezfx/idlegame-backend/internal/service/inventory"
 	"github.com/diezfx/idlegame-backend/internal/service/item"
 	"github.com/diezfx/idlegame-backend/internal/service/monster"
 	"github.com/diezfx/idlegame-backend/internal/storage"
+	"github.com/diezfx/idlegame-backend/pkg/masterdata"
 )
-
-var miningJobs = []JobDefinition{
-	{
-		JobDefID:         item.StoneOreType.String(),
-		JobType:          MiningJobType,
-		LevelRequirement: 1,
-		Duration:         time.Second * 3,
-		Rewards: Reward{
-			Items: []inventory.Item{
-				{ItemDefID: item.StoneOreType.String(), Quantity: 1},
-			},
-			Exp: 1,
-		},
-	},
-	{
-		JobDefID:         item.CopperOreType.String(),
-		JobType:          MiningJobType,
-		LevelRequirement: 2,
-		Duration:         time.Second * 3,
-		Rewards: Reward{
-			Items: []inventory.Item{
-				{ItemDefID: item.CopperOreType.String(), Quantity: 1},
-			},
-			Exp: 2,
-		},
-	},
-	{
-		JobDefID:         item.IronOreType.String(),
-		JobType:          MiningJobType,
-		LevelRequirement: 3,
-		Duration:         time.Second * 3,
-		Rewards: Reward{
-			Items: []inventory.Item{
-				{ItemDefID: item.IronOreType.String(), Quantity: 1},
-			},
-			Exp: 3,
-		},
-	},
-	{
-		JobDefID:         item.GoldOreType.String(),
-		JobType:          MiningJobType,
-		LevelRequirement: 4,
-		Duration:         time.Second * 3,
-		Rewards: Reward{
-			Items: []inventory.Item{
-				{ItemDefID: item.GoldOreType.String(), Quantity: 1},
-			},
-			Exp: 4,
-		},
-	},
-	{
-		JobDefID:         item.DiamondOreType.String(),
-		JobType:          MiningJobType,
-		LevelRequirement: 5,
-		Duration:         time.Second * 3,
-		Rewards: Reward{
-			Items: []inventory.Item{
-				{ItemDefID: item.DiamondOreType.String(), Quantity: 1},
-			},
-			Exp: 5,
-		},
-	},
-}
 
 func (s *JobService) StartMiningJob(ctx context.Context, userID, monsterID int, oreType item.OreType) (int, error) {
 	// check if monster is not occupied
@@ -95,7 +32,7 @@ func (s *JobService) StartMiningJob(ctx context.Context, userID, monsterID int, 
 	}
 	mon := monster.MonsterFromStorage(storeMon)
 
-	taskDefinition := s.jobContainer.GetGatheringJobDefinition(MiningJobType, oreType.String())
+	taskDefinition := s.jobContainer.GetGatheringJobDefinition(masterdata.MiningJobType, oreType.String())
 	if taskDefinition == nil {
 		return -1, fmt.Errorf("get job definition %d: %w", monsterID, service.ErrJobTypeNotFound)
 	}
@@ -106,7 +43,7 @@ func (s *JobService) StartMiningJob(ctx context.Context, userID, monsterID int, 
 
 	// start
 
-	id, err := s.jobStorage.StoreNewJob(ctx, MiningJobType.String(), userID, monsterID, oreType.String())
+	id, err := s.jobStorage.StoreNewJob(ctx, masterdata.MiningJobType.String(), userID, monsterID, oreType.String())
 	if err != nil {
 		return -1, err
 	}
@@ -130,7 +67,7 @@ func (s *JobService) UpdateMiningJob(ctx context.Context, id int) error {
 		return fmt.Errorf("get job entry for jobID %d: %w", id, err)
 	}
 	now := time.Now()
-	jobDefintion := s.jobContainer.GetGatheringJobDefinition(MiningJobType, string(job.OreType))
+	jobDefintion := s.jobContainer.GetGatheringJobDefinition(masterdata.MiningJobType, string(job.OreType))
 	executionCount := calculateTicks(job.Job, jobDefintion.Duration, now)
 
 	rewards := calculateRewards(jobDefintion.Rewards, executionCount)
