@@ -145,7 +145,7 @@ func handleError(ctx *gin.Context, err error) {
 			ErrorCode: http.StatusBadRequest,
 			Reason:    "invalid input",
 		})
-	case errors.Is(err, service.ErrProjectNotFound):
+	case errors.Is(err, service.ErrJobNotFound):
 		logger.Info(ctx).Err(err).Msg("not found")
 		ctx.JSON(http.StatusNotFound, ErrorResponse{
 			ErrorCode: http.StatusNotFound,
@@ -166,7 +166,7 @@ func handleError(ctx *gin.Context, err error) {
 	case errors.Is(err, service.ErrNotEnoughItems):
 		logger.Info(ctx).Err(err).Msg("not enough items for job")
 		ctx.JSON(http.StatusBadRequest, ErrorResponse{
-			ErrorCode: http.StatusNotFound,
+			ErrorCode: http.StatusBadRequest,
 			Reason:    "not enough items to start job",
 		})
 	default:

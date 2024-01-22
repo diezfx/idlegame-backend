@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/diezfx/idlegame-backend/internal/service"
 	"github.com/diezfx/idlegame-backend/internal/service/item"
 	"github.com/diezfx/idlegame-backend/internal/storage"
 )
@@ -109,14 +110,13 @@ func InitJobs(itemContainer *item.ItemContainer) *JobContainer {
 
 func (s *JobService) StopJob(ctx context.Context, id int) error {
 	// check if job exists
-	job, err := s.jobStorage.GetJobByID(ctx, id)
+	_, err := s.jobStorage.GetJobByID(ctx, id)
 	if err != nil && !errors.Is(err, storage.ErrNotFound) {
-		return fmt.Errorf("get job entry for jobID %d: %w", job.ID, err)
+		return service.ErrJobNotFound
 	}
 	if err != nil {
 		return fmt.Errorf("get job entry for jobID %d: %w", id, err)
 	}
-
 	// remove job
 	err = s.jobStorage.DeleteJobByID(ctx, id)
 	if err != nil {
