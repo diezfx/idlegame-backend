@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/diezfx/idlegame-backend/internal/service"
-	"github.com/diezfx/idlegame-backend/internal/service/item"
 	"github.com/diezfx/idlegame-backend/internal/storage"
 	"github.com/diezfx/idlegame-backend/pkg/masterdata"
 )
@@ -16,24 +15,23 @@ type JobService struct {
 	jobStorage       JobStorage
 	monsterStorage   MonsterStorage
 	inventoryStorage InventoryStorage
-	jobContainer     masterdata.JobContainer
+	masterdata       *masterdata.Container
 }
 
-func New(jobStorage JobStorage, monsterStorage MonsterStorage, inventoryStorage InventoryStorage,
-	itemContainer *item.ItemContainer) *JobService {
+func New(jobStorage JobStorage, monsterStorage MonsterStorage, inventoryStorage InventoryStorage, masterdata *masterdata.Container) *JobService {
 	return &JobService{
 		jobStorage:       jobStorage,
 		monsterStorage:   monsterStorage,
 		inventoryStorage: inventoryStorage,
-		jobContainer:     *masterdata.InitJobs(itemContainer),
+		masterdata:       masterdata,
 	}
 }
 
 func (s *JobService) GetJob(ctx context.Context, id int) (*Job, error) {
 	// check if job exists
 	storageJob, err := s.jobStorage.GetJobByID(ctx, id)
-	if err != nil && !errors.Is(err, storage.ErrNotFound) {
-		return nil, fmt.Errorf("get job entry for jobID %d: %w", storageJob.ID, err)
+	if err != nil && errors.Is(err, storage.ErrNotFound) {
+		return nil, service.ErrJobNotFound
 	}
 	if err != nil {
 		return nil, fmt.Errorf("get job entry for jobID %d: %w", id, err)

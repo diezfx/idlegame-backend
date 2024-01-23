@@ -33,7 +33,7 @@ func (s *JobService) StartSmeltingJob(ctx context.Context, userID, monsterID int
 	}
 	mon := monster.MonsterFromStorage(storeMon)
 
-	taskDefinition := s.jobContainer.GetSmeltingJobDefinition(jobDefID)
+	taskDefinition := s.masterdata.Jobs.GetSmeltingJobDefinition(jobDefID)
 	if taskDefinition == nil {
 		return -1, fmt.Errorf("get job definition %s: %w", jobDefID, service.ErrJobTypeNotFound)
 	}
@@ -68,9 +68,9 @@ func (s *JobService) UpdateSmeltingJob(ctx context.Context, id int) error {
 		return fmt.Errorf("get job entry for jobID %d: %w", id, err)
 	}
 	now := time.Now()
-	jobDefintion := s.jobContainer.GetSmeltingJobDefinition(job.JobDefID)
+	jobDefintion := s.masterdata.Jobs.GetSmeltingJobDefinition(job.JobDefID)
 
-	executionCount := calculateTicks(*job, jobDefintion.Duration, now)
+	executionCount := calculateTicks(*job, jobDefintion.Duration.Duration(), now)
 
 	inventoryStr, err := s.inventoryStorage.GetInventory(ctx, job.UserID)
 	if err != nil {
@@ -108,7 +108,7 @@ func (s *JobService) UpdateSmeltingJob(ctx context.Context, id int) error {
 		return fmt.Errorf("add items for userID %d: %w", job.UserID, err)
 	}
 
-	_, err = s.monsterStorage.AddMonsterExperience(ctx, job.Monsters[0], rewards.Exp)
+	_, err = s.monsterStorage.AddMonsterExperience(ctx, job.Monsters[0], rewards.Experience)
 	if err != nil {
 		return fmt.Errorf("add exp for userID %d: %w", job.UserID, err)
 	}
@@ -125,8 +125,8 @@ func calculateMaxRuns(inventory *inventory.Inventory, jobDef *masterdata.Recipes
 	for _, cost := range jobDef.Ingredients {
 		found := false
 		for _, item := range inventory.Items {
-			if item.ItemDefID == string(cost.Item) {
-				max := item.Quantity / cost.Count
+			if item.ID == string(cost.ID) {
+				max := item.Quantity / cost.Quantity
 				if max < maxRuns {
 					maxRuns = max
 					found = true

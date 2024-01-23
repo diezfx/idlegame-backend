@@ -3,11 +3,13 @@ package config
 import (
 	"os"
 
+	masterdatacfg "github.com/diezfx/idlegame-backend/internal/config/masterdata"
 	postgrescfg "github.com/diezfx/idlegame-backend/internal/config/postgres"
 	supabasecfg "github.com/diezfx/idlegame-backend/internal/config/supabase"
 	"github.com/diezfx/idlegame-backend/pkg/auth"
 	"github.com/diezfx/idlegame-backend/pkg/configloader"
 	"github.com/diezfx/idlegame-backend/pkg/db"
+	"github.com/diezfx/idlegame-backend/pkg/masterdata"
 )
 
 type Environment string
@@ -23,6 +25,7 @@ type Config struct {
 	LogLevel    string
 	Auth        auth.Config
 	DB          db.Config
+	Masterdata  masterdata.Config
 }
 
 func Load() (Config, error) {
@@ -30,6 +33,8 @@ func Load() (Config, error) {
 
 	// read from stuff json
 	loader := configloader.NewFileLoader("/etc/config", "/etc/secrets")
+
+	mstrdata := masterdatacfg.LoadConfig()
 
 	// read postgres secrets
 
@@ -50,6 +55,7 @@ func Load() (Config, error) {
 			LogLevel:    "debug",
 			DB:          pgDB,
 			Auth:        authCfg,
+			Masterdata:  mstrdata,
 		}, nil
 	}
 
@@ -62,6 +68,7 @@ func Load() (Config, error) {
 			Username: "postgres", Password: "postgres",
 			MigrationsDir: "db/migrations",
 		},
+		Masterdata: mstrdata,
 	}, nil
 }
 

@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/diezfx/idlegame-backend/internal/service"
-	"github.com/diezfx/idlegame-backend/internal/service/inventory"
 	"github.com/diezfx/idlegame-backend/internal/service/item"
 	"github.com/diezfx/idlegame-backend/internal/service/monster"
 	"github.com/diezfx/idlegame-backend/internal/storage"
+	"github.com/diezfx/idlegame-backend/pkg/logger"
 	"github.com/diezfx/idlegame-backend/pkg/masterdata"
 )
 
@@ -33,7 +33,7 @@ func (s *JobService) StartWoodCuttingJob(ctx context.Context, userID, monsterID 
 	}
 	mon := monster.MonsterFromStorage(storeMon)
 
-	taskDefinition := s.jobContainer.GetGatheringJobDefinition(masterdata.WoodCuttingJobType, treeType.String())
+	taskDefinition := s.masterdata.Jobs.GetGatheringJobDefinition(masterdata.WoodcuttingJobType, treeType.String())
 	if taskDefinition == nil {
 		return -1, fmt.Errorf("get job definition %d: %w", monsterID, service.ErrJobTypeNotFound)
 	}
@@ -44,7 +44,7 @@ func (s *JobService) StartWoodCuttingJob(ctx context.Context, userID, monsterID 
 
 	// start
 
-	id, err := s.jobStorage.StoreNewJob(ctx, masterdata.WoodCuttingJobType.String(), userID, monsterID, treeType.String())
+	id, err := s.jobStorage.StoreNewJob(ctx, masterdata.WoodcuttingJobType.String(), userID, monsterID, treeType.String())
 	if err != nil {
 		return -1, err
 	}
@@ -68,9 +68,9 @@ func (s *JobService) UpdateWoodcuttingJob(ctx context.Context, id int) error {
 		return fmt.Errorf("get job entry for jobID %d: %w", id, err)
 	}
 	now := time.Now()
-	jobDefintion := s.jobContainer.GetGatheringJobDefinition(masterdata.WoodCuttingJobType, job.TreeType.String())
+	jobDefintion := s.masterdata.Jobs.GetGatheringJobDefinition(masterdata.WoodcuttingJobType, job.TreeType.String())
 
-	executionCount := calculateTicks(job.Job, jobDefintion.Duration, now)
+	executionCount := calculateTicks(job.Job, jobDefintion.Duration.Duration(), now)
 
 	rewards := calculateRewards(jobDefintion.Rewards, executionCount)
 
@@ -79,7 +79,7 @@ func (s *JobService) UpdateWoodcuttingJob(ctx context.Context, id int) error {
 		return fmt.Errorf("add items for userID %d: %w", job.UserID, err)
 	}
 
-	_, err = s.monsterStorage.AddMonsterExperience(ctx, job.Monsters[0], rewards.Exp)
+	_, err = s.monsterStorage.AddMonsterExperience(ctx, job.Monsters[0], rewards.Experience)
 	if err != nil {
 		return fmt.Errorf("add exp for userID %d: %w", job.UserID, err)
 	}
@@ -91,50 +91,51 @@ func (s *JobService) UpdateWoodcuttingJob(ctx context.Context, id int) error {
 	return nil
 }
 
-func toInventoryEntries(userID int, itm []inventory.Item) []storage.InventoryEntry {
+func toInventoryEntries(userID int, itm []masterdata.ItemWithQuantity) []storage.InventoryEntry {
 	entries := []storage.InventoryEntry{}
 	for _, i := range itm {
 		entries = append(entries, storage.InventoryEntry{
 			UserID:    userID,
-			ItemDefID: i.ItemDefID,
+			ItemDefID: i.ID,
 			Quantity:  i.Quantity,
 		})
 	}
 	return entries
 }
 
-func costToInventoryEntries(userID int, itm []masterdata.Ingredient) []storage.InventoryEntry {
+func costToInventoryEntries(userID int, itm []masterdata.ItemWithQuantity) []storage.InventoryEntry {
 	entries := []storage.InventoryEntry{}
 	for _, i := range itm {
 		entries = append(entries, storage.InventoryEntry{
 			UserID:    userID,
-			ItemDefID: string(i.Item),
-			Quantity:  -i.Count,
+			ItemDefID: string(i.ID),
+			Quantity:  -i.Quantity,
 		})
 	}
 	return entries
 }
 
 func calculateRewards(rewards masterdata.Reward, executionCount int) masterdata.Reward {
-	var rewardItems = []inventory.Item{}
+	var rewardItems = []masterdata.ItemWithQuantity{}
 	for _, item := range rewards.Items {
-		rewardItems = append(rewardItems, inventory.Item{
-			Quantity:  item.Quantity * executionCount,
-			ItemDefID: item.ItemDefID,
+		rewardItems = append(rewardItems, masterdata.ItemWithQuantity{
+			Quantity: item.Quantity * executionCount,
+			ID:       item.ID,
 		})
 	}
 	return masterdata.Reward{
-		Items: rewardItems,
-		Exp:   rewards.Exp * executionCount,
+		Items:      rewardItems,
+		Experience: rewards.Experience * executionCount,
 	}
 }
 
-func calculateCosts(costs []masterdata.Ingredient, executionCount int) []masterdata.Ingredient {
-	var costItems = []masterdata.Ingredient{}
+func calculateCosts(costs []masterdata.ItemWithQuantity, executionCount int) []masterdata.ItemWithQuantity {
+	logger.Debug(context.Background()).Int("executionCount", executionCount).Any("costs", costs).Msg("calculateCosts")
+	var costItems = []masterdata.ItemWithQuantity{}
 	for _, item := range costs {
-		costItems = append(costItems, masterdata.Ingredient{
-			Item:  item.Item,
-			Count: item.Count * executionCount,
+		costItems = append(costItems, masterdata.ItemWithQuantity{
+			ID:       item.ID,
+			Quantity: item.Quantity * executionCount,
 		})
 	}
 	return costItems

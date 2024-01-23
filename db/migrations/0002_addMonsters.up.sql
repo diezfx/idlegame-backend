@@ -12,4 +12,4 @@ INSERT INTO monsters (
 
 INSERT INTO users (username, external_id ) VALUES ('felix', '12345678');
 
-INSERT INTO inventory_items (user_id, item_def_id, quantity) VALUES (1,'Stone',100);
+INSERT INTO inventory_items (user_id, item_def_id, quantity) VALUES (1,'stone',100);

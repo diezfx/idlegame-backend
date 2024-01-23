@@ -44,7 +44,7 @@ func (d *Daemon) Run(ctx context.Context) error {
 				return err
 			}
 			for _, job := range jobs {
-				if job.JobType == masterdata.WoodCuttingJobType.String() {
+				if job.JobType == masterdata.WoodcuttingJobType.String() {
 					err = d.jobService.UpdateWoodcuttingJob(ctx, job.ID)
 					if err != nil {
 						logger.Error(ctx, err).Msg("update woodcutting job")

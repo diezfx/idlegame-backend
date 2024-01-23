@@ -8,14 +8,14 @@ type Inventory struct {
 }
 
 type Item struct {
-	Quantity  int
-	ItemDefID string
+	Quantity int    `json:"quantity"`
+	ID       string `json:"id"`
 }
 
 func ToItemFromStorage(i storage.InventoryEntry) *Item {
 	return &Item{
-		Quantity:  i.Quantity,
-		ItemDefID: i.ItemDefID,
+		Quantity: i.Quantity,
+		ID:       i.ItemDefID,
 	}
 }
 

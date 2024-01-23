@@ -32,7 +32,7 @@ func (s *JobService) StartMiningJob(ctx context.Context, userID, monsterID int, 
 	}
 	mon := monster.MonsterFromStorage(storeMon)
 
-	taskDefinition := s.jobContainer.GetGatheringJobDefinition(masterdata.MiningJobType, oreType.String())
+	taskDefinition := s.masterdata.Jobs.GetGatheringJobDefinition(masterdata.MiningJobType, oreType.String())
 	if taskDefinition == nil {
 		return -1, fmt.Errorf("get job definition %d: %w", monsterID, service.ErrJobTypeNotFound)
 	}
@@ -67,8 +67,8 @@ func (s *JobService) UpdateMiningJob(ctx context.Context, id int) error {
 		return fmt.Errorf("get job entry for jobID %d: %w", id, err)
 	}
 	now := time.Now()
-	jobDefintion := s.jobContainer.GetGatheringJobDefinition(masterdata.MiningJobType, string(job.OreType))
-	executionCount := calculateTicks(job.Job, jobDefintion.Duration, now)
+	jobDefintion := s.masterdata.Jobs.GetGatheringJobDefinition(masterdata.MiningJobType, string(job.OreType))
+	executionCount := calculateTicks(job.Job, jobDefintion.Duration.Duration(), now)
 
 	rewards := calculateRewards(jobDefintion.Rewards, executionCount)
 
@@ -77,7 +77,7 @@ func (s *JobService) UpdateMiningJob(ctx context.Context, id int) error {
 		return fmt.Errorf("add items for userID %d: %w", job.UserID, err)
 	}
 
-	_, err = s.monsterStorage.AddMonsterExperience(ctx, job.Monsters[0], rewards.Exp)
+	_, err = s.monsterStorage.AddMonsterExperience(ctx, job.Monsters[0], rewards.Experience)
 	if err != nil {
 		return fmt.Errorf("add exp for userID %d: %w", job.UserID, err)
 	}

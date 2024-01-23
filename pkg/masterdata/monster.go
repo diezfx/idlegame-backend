@@ -5,3 +5,7 @@ type Monster struct {
 	Name string `json:"name"`
 	Type string `json:"type"`
 }
+
+type MonsterContainer struct {
+	Monsters []Monster `json:"monsters"`
+}

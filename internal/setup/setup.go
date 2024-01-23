@@ -10,12 +10,12 @@ import (
 	"github.com/diezfx/idlegame-backend/internal/api"
 	"github.com/diezfx/idlegame-backend/internal/config"
 	"github.com/diezfx/idlegame-backend/internal/service/inventory"
-	"github.com/diezfx/idlegame-backend/internal/service/item"
 	"github.com/diezfx/idlegame-backend/internal/service/jobs"
 	"github.com/diezfx/idlegame-backend/internal/service/monster"
 	"github.com/diezfx/idlegame-backend/internal/storage"
 	"github.com/diezfx/idlegame-backend/pkg/db"
 	"github.com/diezfx/idlegame-backend/pkg/logger"
+	"github.com/diezfx/idlegame-backend/pkg/masterdata"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -41,9 +41,12 @@ func SetupSplitService(ctx context.Context) (*http.Server, *jobs.Daemon, error) 
 		return nil, nil, fmt.Errorf("create storage client: %w", err)
 	}
 
-	itemContainer := item.NewContainer()
+	masterdataContainer, err := masterdata.New(cfg.Masterdata)
+	if err != nil {
+		return nil, nil, fmt.Errorf("create masterdata container: %w", err)
+	}
 
-	jobService := jobs.New(storageClient, storageClient, storageClient, itemContainer)
+	jobService := jobs.New(storageClient, storageClient, storageClient, masterdataContainer)
 	inventoryService := inventory.New(storageClient)
 	monsterService := monster.New(storageClient)
 
