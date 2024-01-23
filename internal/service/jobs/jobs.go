@@ -18,12 +18,12 @@ type JobService struct {
 	masterdata       *masterdata.Container
 }
 
-func New(jobStorage JobStorage, monsterStorage MonsterStorage, inventoryStorage InventoryStorage, masterdata *masterdata.Container) *JobService {
+func New(jobStorage JobStorage, monsterStorage MonsterStorage, inventoryStorage InventoryStorage, mdata *masterdata.Container) *JobService {
 	return &JobService{
 		jobStorage:       jobStorage,
 		monsterStorage:   monsterStorage,
 		inventoryStorage: inventoryStorage,
-		masterdata:       masterdata,
+		masterdata:       mdata,
 	}
 }
 

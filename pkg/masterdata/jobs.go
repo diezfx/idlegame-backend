@@ -2,6 +2,8 @@ package masterdata
 
 import "github.com/diezfx/idlegame-backend/pkg/duration"
 
+type JobType string
+
 type Job struct {
 	ID               string            `json:"id"`
 	JobType          JobType           `json:"jobType"`
@@ -19,9 +21,6 @@ type JobContainer struct {
 	ProcessingJobs []*Recipes `json:"processingJobs"`
 }
 
-// what kind of wood
-type JobType string
-
 const (
 	WoodcuttingJobType JobType = "woodcutting"
 	MiningJobType      JobType = "mining"
@@ -35,7 +34,6 @@ type Reward struct {
 }
 
 func (c *JobContainer) GetGatheringJobDefinition(jobType JobType, jobDefID string) *Job {
-
 	for _, def := range c.GatheringJobs {
 		if def.ID == jobDefID && def.JobType == jobType {
 			return &def

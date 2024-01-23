@@ -18,8 +18,7 @@ type Config struct {
 }
 
 func New(cfg Config) (*Container, error) {
-
-	//load items
+	// load items
 	itemPath := path.Join(cfg.Path, "items.json")
 	itemFile, err := os.ReadFile(itemPath)
 	if err != nil {
@@ -30,7 +29,7 @@ func New(cfg Config) (*Container, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal items: %w", err)
 	}
-	//load jobs
+	// load jobs
 
 	jobPath := path.Join(cfg.Path, "jobs.json")
 	jobFile, err := os.ReadFile(jobPath)
@@ -44,7 +43,7 @@ func New(cfg Config) (*Container, error) {
 		return nil, fmt.Errorf("unmarshal jobs: %w", err)
 	}
 
-	//load monsters
+	// load monsters
 	monsterPath := path.Join(cfg.Path, "monsters.json")
 	monsterFile, err := os.ReadFile(monsterPath)
 	if err != nil {

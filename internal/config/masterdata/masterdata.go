@@ -7,7 +7,6 @@ import (
 const defaultPath = "./config/"
 
 func LoadConfig() masterdata.Config {
-
 	return masterdata.Config{
 		Path: defaultPath,
 	}

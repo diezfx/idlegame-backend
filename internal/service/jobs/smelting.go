@@ -46,8 +46,8 @@ func (s *JobService) StartSmeltingJob(ctx context.Context, userID, monsterID int
 	if err != nil {
 		return -1, fmt.Errorf("get inventory for userID %d: %w", userID, err)
 	}
-	inventory := inventory.ToInventoryFromStorageEntries(inventoryStr, userID)
-	maxRuns := calculateMaxRuns(inventory, taskDefinition)
+	inv := inventory.ToInventoryFromStorageEntries(inventoryStr, userID)
+	maxRuns := calculateMaxRuns(inv, taskDefinition)
 	if maxRuns == 0 {
 		return -1, service.ErrNotEnoughItems
 	}
@@ -76,14 +76,14 @@ func (s *JobService) UpdateSmeltingJob(ctx context.Context, id int) error {
 	if err != nil {
 		return fmt.Errorf("get inventory for userID %d: %w", job.UserID, err)
 	}
-	inventory := inventory.ToInventoryFromStorageEntries(inventoryStr, job.UserID)
+	inv := inventory.ToInventoryFromStorageEntries(inventoryStr, job.UserID)
 
-	//check that enough items are there
-	maxRuns := calculateMaxRuns(inventory, jobDefintion)
+	// check that enough items are there
+	maxRuns := calculateMaxRuns(inv, jobDefintion)
 
 	if maxRuns < executionCount {
 		logger.Debug(ctx).Int("jobID", id).Msg("drop job")
-		err := s.jobStorage.DeleteJobByID(ctx, id)
+		err = s.jobStorage.DeleteJobByID(ctx, id)
 		if err != nil {
 			return fmt.Errorf("delete job entry for jobID %d: %w", id, err)
 		}
@@ -95,7 +95,7 @@ func (s *JobService) UpdateSmeltingJob(ctx context.Context, id int) error {
 	}
 
 	rewards := calculateRewards(jobDefintion.Rewards, executionCount)
-	//item to get
+	// item to get
 	costs := calculateCosts(jobDefintion.Ingredients, executionCount)
 
 	err = s.inventoryStorage.AddItems(ctx, costToInventoryEntries(job.UserID, costs))
@@ -120,20 +120,18 @@ func (s *JobService) UpdateSmeltingJob(ctx context.Context, id int) error {
 	return nil
 }
 
-func calculateMaxRuns(inventory *inventory.Inventory, jobDef *masterdata.Recipes) int {
+func calculateMaxRuns(inv *inventory.Inventory, jobDef *masterdata.Recipes) int {
 	maxRuns := math.MaxInt32
 	for _, cost := range jobDef.Ingredients {
 		found := false
-		for _, item := range inventory.Items {
-			if item.ID == string(cost.ID) {
+		for _, item := range inv.Items {
+			if item.ID == cost.ID {
 				max := item.Quantity / cost.Quantity
 				if max < maxRuns {
 					maxRuns = max
 					found = true
 				}
 			}
-			// handle case that item is not found
-
 		}
 		if !found {
 			return 0

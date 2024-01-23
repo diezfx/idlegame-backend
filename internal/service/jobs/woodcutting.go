@@ -108,7 +108,7 @@ func costToInventoryEntries(userID int, itm []masterdata.ItemWithQuantity) []sto
 	for _, i := range itm {
 		entries = append(entries, storage.InventoryEntry{
 			UserID:    userID,
-			ItemDefID: string(i.ID),
+			ItemDefID: i.ID,
 			Quantity:  -i.Quantity,
 		})
 	}
