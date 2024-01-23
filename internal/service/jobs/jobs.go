@@ -65,7 +65,7 @@ func fromJob(j storage.Job) Job {
 	}
 }
 
-func calculateTicks(job Job, duration time.Duration, now time.Time) int {
+func calculateTicks(job *Job, duration time.Duration, now time.Time) int {
 	diff := job.UpdatedAt.Sub(job.StartedAt)
 	steps := diff / duration // the ticks from the beginning
 	executionCount := 0

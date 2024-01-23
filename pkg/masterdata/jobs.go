@@ -26,6 +26,7 @@ const (
 	MiningJobType      JobType = "mining"
 	HarvestingJobType  JobType = "harvesting"
 	SmeltingJobType    JobType = "smelting"
+	WoodWorkingJobType JobType = "woodWorking"
 )
 
 type Reward struct {
@@ -33,9 +34,9 @@ type Reward struct {
 	Experience int                `json:"experience"`
 }
 
-func (c *JobContainer) GetGatheringJobDefinition(jobType JobType, jobDefID string) *Job {
+func (c *JobContainer) GetGatheringJobDefinition(jobDefID string) *Job {
 	for _, def := range c.GatheringJobs {
-		if def.ID == jobDefID && def.JobType == jobType {
+		if def.ID == jobDefID {
 			return &def
 		}
 	}
@@ -43,9 +44,9 @@ func (c *JobContainer) GetGatheringJobDefinition(jobType JobType, jobDefID strin
 	return nil
 }
 
-func (c *JobContainer) GetSmeltingJobDefinition(jobDefID string) *Recipes {
+func (c *JobContainer) GetProcessingJobDefinition(jobDefID string) *Recipes {
 	for _, def := range c.ProcessingJobs {
-		if def.ID == jobDefID && def.JobType == SmeltingJobType {
+		if def.ID == jobDefID {
 			return def
 		}
 	}

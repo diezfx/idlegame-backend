@@ -17,10 +17,8 @@ type Daemon struct {
 
 type DaemonJobService interface {
 	GetJobs(ctx context.Context) ([]Job, error)
-	UpdateWoodcuttingJob(ctx context.Context, id int) error
-	UpdateMiningJob(ctx context.Context, id int) error
-	UpdateHarvestingJob(ctx context.Context, id int) error
-	UpdateSmeltingJob(ctx context.Context, id int) error
+	UpdateGatheringJob(ctx context.Context, id int) error
+	UpdateProcessingJob(ctx context.Context, id int) error
 }
 
 func NewDaemon(jobService DaemonJobService) *Daemon {
@@ -44,29 +42,15 @@ func (d *Daemon) Run(ctx context.Context) error {
 				return err
 			}
 			for _, job := range jobs {
-				if job.JobType == masterdata.WoodcuttingJobType.String() {
-					err = d.jobService.UpdateWoodcuttingJob(ctx, job.ID)
+				if job.JobType == masterdata.WoodcuttingJobType.String() || job.JobType == masterdata.MiningJobType.String() || job.JobType == masterdata.HarvestingJobType.String() {
+					err = d.jobService.UpdateGatheringJob(ctx, job.ID)
 					if err != nil {
 						logger.Error(ctx, err).Msg("update woodcutting job")
 						return err
 					}
 				}
-				if job.JobType == masterdata.MiningJobType.String() {
-					err = d.jobService.UpdateMiningJob(ctx, job.ID)
-					if err != nil {
-						logger.Error(ctx, err).Msg("update mining job")
-						return err
-					}
-				}
-				if job.JobType == masterdata.HarvestingJobType.String() {
-					err = d.jobService.UpdateHarvestingJob(ctx, job.ID)
-					if err != nil {
-						logger.Error(ctx, err).Msg("update harvesting job")
-						return err
-					}
-				}
-				if job.JobType == masterdata.SmeltingJobType.String() {
-					err = d.jobService.UpdateSmeltingJob(ctx, job.ID)
+				if job.JobType == masterdata.SmeltingJobType.String() || job.JobType == masterdata.WoodWorkingJobType.String() {
+					err = d.jobService.UpdateProcessingJob(ctx, job.ID)
 					if err != nil {
 						logger.Error(ctx, err).Msg("update smelting job")
 						return err

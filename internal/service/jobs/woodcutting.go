@@ -8,14 +8,12 @@ import (
 	"time"
 
 	"github.com/diezfx/idlegame-backend/internal/service"
-	"github.com/diezfx/idlegame-backend/internal/service/item"
 	"github.com/diezfx/idlegame-backend/internal/service/monster"
 	"github.com/diezfx/idlegame-backend/internal/storage"
-	"github.com/diezfx/idlegame-backend/pkg/logger"
 	"github.com/diezfx/idlegame-backend/pkg/masterdata"
 )
 
-func (s *JobService) StartWoodCuttingJob(ctx context.Context, userID, monsterID int, treeType item.TreeType) (int, error) {
+func (s *JobService) StartGatheringJob(ctx context.Context, userID, monsterID int, jobDefID string) (int, error) {
 	// check if monster is not occupied
 	_, err := s.jobStorage.GetJobByMonster(ctx, monsterID)
 	if err != nil && !errors.Is(err, storage.ErrNotFound) {
@@ -33,7 +31,7 @@ func (s *JobService) StartWoodCuttingJob(ctx context.Context, userID, monsterID 
 	}
 	mon := monster.MonsterFromStorage(storeMon)
 
-	taskDefinition := s.masterdata.Jobs.GetGatheringJobDefinition(masterdata.WoodcuttingJobType, treeType.String())
+	taskDefinition := s.masterdata.Jobs.GetGatheringJobDefinition(jobDefID)
 	if taskDefinition == nil {
 		return -1, fmt.Errorf("get job definition %d: %w", monsterID, service.ErrJobTypeNotFound)
 	}
@@ -44,33 +42,23 @@ func (s *JobService) StartWoodCuttingJob(ctx context.Context, userID, monsterID 
 
 	// start
 
-	id, err := s.jobStorage.StoreNewJob(ctx, masterdata.WoodcuttingJobType.String(), userID, monsterID, treeType.String())
+	id, err := s.jobStorage.StoreNewJob(ctx, taskDefinition.JobType.String(), userID, monsterID, jobDefID)
 	if err != nil {
 		return -1, err
 	}
 	return id, nil
 }
 
-// getJob
-
-func (s *JobService) GetWoodcuttingJob(ctx context.Context, id int) (*WoodCuttingJob, error) {
-	job, err := s.jobStorage.GetJobByID(ctx, id)
-	if err != nil {
-		return nil, fmt.Errorf("get job entry for jobID %d: %w", id, err)
-	}
-	return FromWoodcuttingJob(job), nil
-}
-
-func (s *JobService) UpdateWoodcuttingJob(ctx context.Context, id int) error {
+func (s *JobService) UpdateGatheringJob(ctx context.Context, id int) error {
 	// check if job exists
-	job, err := s.GetWoodcuttingJob(ctx, id)
+	job, err := s.GetJob(ctx, id)
 	if err != nil {
 		return fmt.Errorf("get job entry for jobID %d: %w", id, err)
 	}
 	now := time.Now()
-	jobDefintion := s.masterdata.Jobs.GetGatheringJobDefinition(masterdata.WoodcuttingJobType, job.TreeType.String())
+	jobDefintion := s.masterdata.Jobs.GetGatheringJobDefinition(job.JobDefID)
 
-	executionCount := calculateTicks(job.Job, jobDefintion.Duration.Duration(), now)
+	executionCount := calculateTicks(job, jobDefintion.Duration.Duration(), now)
 
 	rewards := calculateRewards(jobDefintion.Rewards, executionCount)
 
@@ -130,7 +118,6 @@ func calculateRewards(rewards masterdata.Reward, executionCount int) masterdata.
 }
 
 func calculateCosts(costs []masterdata.ItemWithQuantity, executionCount int) []masterdata.ItemWithQuantity {
-	logger.Debug(context.Background()).Int("executionCount", executionCount).Any("costs", costs).Msg("calculateCosts")
 	var costItems = []masterdata.ItemWithQuantity{}
 	for _, item := range costs {
 		costItems = append(costItems, masterdata.ItemWithQuantity{

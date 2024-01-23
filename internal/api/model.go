@@ -3,7 +3,6 @@ package api
 import (
 	"fmt"
 
-	"github.com/diezfx/idlegame-backend/internal/service/item"
 	"github.com/diezfx/idlegame-backend/internal/service/monster"
 )
 
@@ -24,25 +23,13 @@ type ErrorResponse struct {
 	Reason    string
 }
 
-type StartWoodCuttingJobRequest struct {
-	UserID   int           `json:"userId"`
-	Monster  int           `json:"monster"`
-	TreeType item.TreeType `json:"treeType"`
+type StartGatheringJob struct {
+	UserID   int    `json:"userId"`
+	Monster  int    `json:"monster"`
+	JobDefID string `json:"jobDefId"`
 }
 
-type StartMiningJobRequest struct {
-	UserID  int          `json:"userId"`
-	Monster int          `json:"monster"`
-	OreType item.OreType `json:"oreType"`
-}
-
-type StartHarvestingJobRequest struct {
-	UserID   int           `json:"userId"`
-	Monster  int           `json:"monster"`
-	CropType item.CropType `json:"cropType"`
-}
-
-type StartSmeltingJob struct {
+type StartProcessingJob struct {
 	UserID   int    `json:"userId"`
 	Monster  int    `json:"monster"`
 	JobDefID string `json:"jobDefId"`

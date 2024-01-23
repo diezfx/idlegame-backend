@@ -15,7 +15,7 @@ import (
 	"github.com/diezfx/idlegame-backend/pkg/masterdata"
 )
 
-func (s *JobService) StartSmeltingJob(ctx context.Context, userID, monsterID int, jobDefID string) (int, error) {
+func (s *JobService) StartProcessingJob(ctx context.Context, userID, monsterID int, jobDefID string) (int, error) {
 	// check if monster is not occupied
 	_, err := s.jobStorage.GetJobByMonster(ctx, monsterID)
 	if err != nil && !errors.Is(err, storage.ErrNotFound) {
@@ -33,7 +33,7 @@ func (s *JobService) StartSmeltingJob(ctx context.Context, userID, monsterID int
 	}
 	mon := monster.MonsterFromStorage(storeMon)
 
-	taskDefinition := s.masterdata.Jobs.GetSmeltingJobDefinition(jobDefID)
+	taskDefinition := s.masterdata.Jobs.GetProcessingJobDefinition(jobDefID)
 	if taskDefinition == nil {
 		return -1, fmt.Errorf("get job definition %s: %w", jobDefID, service.ErrJobTypeNotFound)
 	}
@@ -54,23 +54,23 @@ func (s *JobService) StartSmeltingJob(ctx context.Context, userID, monsterID int
 
 	// start
 
-	id, err := s.jobStorage.StoreNewJob(ctx, masterdata.SmeltingJobType.String(), userID, monsterID, jobDefID)
+	id, err := s.jobStorage.StoreNewJob(ctx, taskDefinition.JobType.String(), userID, monsterID, jobDefID)
 	if err != nil {
 		return -1, err
 	}
 	return id, nil
 }
 
-func (s *JobService) UpdateSmeltingJob(ctx context.Context, id int) error {
+func (s *JobService) UpdateProcessingJob(ctx context.Context, id int) error {
 	// check if job exists
 	job, err := s.GetJob(ctx, id)
 	if err != nil {
 		return fmt.Errorf("get job entry for jobID %d: %w", id, err)
 	}
 	now := time.Now()
-	jobDefintion := s.masterdata.Jobs.GetSmeltingJobDefinition(job.JobDefID)
+	jobDefintion := s.masterdata.Jobs.GetProcessingJobDefinition(job.JobDefID)
 
-	executionCount := calculateTicks(*job, jobDefintion.Duration.Duration(), now)
+	executionCount := calculateTicks(job, jobDefintion.Duration.Duration(), now)
 
 	inventoryStr, err := s.inventoryStorage.GetInventory(ctx, job.UserID)
 	if err != nil {

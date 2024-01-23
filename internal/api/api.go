@@ -49,21 +49,14 @@ func InitAPI(cfg *config.Config, jobService JobService, inventoryService Invento
 
 	r.GET("/monsters/:id", api.GetMonster)
 	r.GET("/jobs/:id", api.GetJob)
-	woodcuttingRouter := r.Group("/jobs/woodcutting")
-	woodcuttingRouter.POST("/", api.PostWoodcuttingJob)
-	woodcuttingRouter.GET("/:id", api.GetWoodcuttingJob)
+	r.GET("/jobs", api.GetJobs)
+	gatheringRouter := r.Group("/jobs/gathering")
+	gatheringRouter.POST("/", api.PostGatheringJob)
+	gatheringRouter.GET("/:id", api.GetJob)
 
-	miningRouter := r.Group("/jobs/mining")
-	miningRouter.POST("/", api.PostMiningJob)
-	miningRouter.GET("/:id", api.GetMiningJob)
-
-	harvestingRouter := r.Group("/jobs/harvesting")
-	harvestingRouter.POST("/", api.PostHarvestingJob)
-	harvestingRouter.GET("/:id", api.GetHarvestingJob)
-
-	smeltingRouter := r.Group("/jobs/smelting")
-	smeltingRouter.POST("/", api.PostSmeltingJob)
-	smeltingRouter.GET("/:id", api.GetHarvestingJob)
+	processingRouter := r.Group("/jobs/processing")
+	processingRouter.POST("/", api.PostProcessingJob)
+	processingRouter.GET("/:id", api.GetJob)
 
 	r.DELETE("/jobs/:id", api.DeleteJob)
 	r.GET("/inventory/:userID", api.GetInventory)
@@ -85,6 +78,15 @@ func (api *APIHandler) GetJob(ctx *gin.Context) {
 	}
 
 	resp, err := api.jobService.GetJob(ctx, id)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+	ctx.JSON(http.StatusOK, resp)
+}
+
+func (api *APIHandler) GetJobs(ctx *gin.Context) {
+	resp, err := api.jobService.GetJobs(ctx)
 	if err != nil {
 		handleError(ctx, err)
 		return

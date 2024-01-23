@@ -110,7 +110,7 @@ type getJobsQueryResult struct {
 
 func (c *Client) GetJobs(ctx context.Context) ([]Job, error) {
 	const getJobsQuery = `
-	SELECT j.id,j.started_at,j.updated_at,j.job_type, m.monster_id, j.user_id
+	SELECT j.id,j.job_def_id,j.started_at,j.updated_at,j.job_type, m.monster_id, j.user_id
 	FROM jobs as j
 	LEFT JOIN job_monsters as m
 	ON j.id=m.job_id
