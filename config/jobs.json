@@ -208,6 +208,69 @@
                     "quantity": 1
                 }
             ]
+        },
+        {
+            "id": "spruceBlank",
+            "jobType": "woodcutting",
+            "levelRequirement": 3,
+            "duration": "3s",
+            "rewards": {
+                "items": [
+                    {
+                        "id": "spruceBlank",
+                        "quantity": 1
+                    }
+                ],
+                "experience": 3
+            },
+            "ingredients": [
+                {
+                    "id": "spruce",
+                    "quantity": 2
+                }
+            ]
+        },
+        {
+            "id": "birchBlank",
+            "jobType": "woodcutting",
+            "levelRequirement": 2,
+            "duration": "3s",
+            "rewards": {
+                "items": [
+                    {
+                        "id": "birchBlank",
+                        "quantity": 1
+                    }
+                ],
+                "experience": 2
+            },
+            "ingredients": [
+                {
+                    "id": "birch",
+                    "quantity": 2
+                }
+            ]
+        },
+        {
+            "id": "pineBlank",
+            "jobType": "woodcutting",
+            "levelRequirement": 3,
+            "duration": "3s",
+            "rewards": {
+                "items": [
+                    {
+                        "id": "pineBlank",
+                        "quantity": 1
+                    }
+                ],
+                "experience": 3
+            },
+            "ingredients": [
+                {
+                    "id": "pine",
+                    "quantity": 2
+                }
+            ]
         }
     ]
 }
