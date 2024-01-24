@@ -44,6 +44,8 @@ func HTTPLoggingMiddleware() gin.HandlerFunc {
 			}
 			if json.Valid(responseBody) {
 				log = log.RawJSON("response_body", responseBody)
+			} else {
+				log = log.String("response_body", string(responseBody))
 			}
 		}
 

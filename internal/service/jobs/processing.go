@@ -28,6 +28,9 @@ func (s *JobService) StartProcessingJob(ctx context.Context, userID, monsterID i
 	// check if requirements are met
 
 	storeMon, err := s.monsterStorage.GetMonsterByID(ctx, monsterID)
+	if errors.Is(err, storage.ErrNotFound) {
+		return -1, fmt.Errorf("get job entry for %d: %w", monsterID, service.ErrMonsterNotFound)
+	}
 	if err != nil {
 		return -1, fmt.Errorf("get monster information for monsterID %d: %w", monsterID, err)
 	}

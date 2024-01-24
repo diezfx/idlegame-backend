@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/diezfx/idlegame-backend/pkg/db"
@@ -18,7 +19,7 @@ func (c *Client) GetMonsterByID(ctx context.Context, id int) (*Monster, error) {
 
 	err := c.dbClient.Get(ctx, &monster, getMonsterQuery, id)
 
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return nil, ErrNotFound
 	}
 

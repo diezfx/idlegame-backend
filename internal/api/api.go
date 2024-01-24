@@ -8,7 +8,6 @@ import (
 
 	"github.com/diezfx/idlegame-backend/internal/config"
 	"github.com/diezfx/idlegame-backend/internal/service"
-	"github.com/diezfx/idlegame-backend/pkg/auth"
 	"github.com/diezfx/idlegame-backend/pkg/logger"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -40,10 +39,12 @@ func InitAPI(cfg *config.Config, jobService JobService, inventoryService Invento
 		MaxAge:           12 * time.Hour,
 	}))
 	r := mr.Group("/api/v1.0/")
-	if !cfg.IsLocal() {
-		r.Use(auth.AuthMiddleware(cfg.Auth))
-	}
-
+	// TODO; deactivate for docker-compose too
+	/*
+		if !cfg.IsLocal() {
+			r.Use(auth.AuthMiddleware(cfg.Auth))
+		}
+	*/
 	// jobHandlers
 	api := newAPIHandler(jobService, inventoryService, monsterService)
 
@@ -148,6 +149,12 @@ func handleError(ctx *gin.Context, err error) {
 			Reason:    "invalid input",
 		})
 	case errors.Is(err, service.ErrJobNotFound):
+		logger.Info(ctx).Err(err).Msg("not found")
+		ctx.JSON(http.StatusNotFound, ErrorResponse{
+			ErrorCode: http.StatusNotFound,
+			Reason:    "not found",
+		})
+	case errors.Is(err, service.ErrMonsterNotFound):
 		logger.Info(ctx).Err(err).Msg("not found")
 		ctx.JSON(http.StatusNotFound, ErrorResponse{
 			ErrorCode: http.StatusNotFound,

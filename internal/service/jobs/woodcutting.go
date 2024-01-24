@@ -14,6 +14,11 @@ import (
 )
 
 func (s *JobService) StartGatheringJob(ctx context.Context, userID, monsterID int, jobDefID string) (int, error) {
+
+	taskDefinition := s.masterdata.Jobs.GetGatheringJobDefinition(jobDefID)
+	if taskDefinition == nil {
+		return -1, fmt.Errorf("get job definition %d: %w", monsterID, service.ErrJobTypeNotFound)
+	}
 	// check if monster is not occupied
 	_, err := s.jobStorage.GetJobByMonster(ctx, monsterID)
 	if err != nil && !errors.Is(err, storage.ErrNotFound) {
@@ -26,15 +31,13 @@ func (s *JobService) StartGatheringJob(ctx context.Context, userID, monsterID in
 	// check if requirements are met
 
 	storeMon, err := s.monsterStorage.GetMonsterByID(ctx, monsterID)
+	if errors.Is(err, storage.ErrNotFound) {
+		return -1, fmt.Errorf("get job entry for %d: %w", monsterID, service.ErrMonsterNotFound)
+	}
 	if err != nil {
 		return -1, fmt.Errorf("get monster information for monsterID %d: %w", monsterID, err)
 	}
 	mon := monster.MonsterFromStorage(storeMon)
-
-	taskDefinition := s.masterdata.Jobs.GetGatheringJobDefinition(jobDefID)
-	if taskDefinition == nil {
-		return -1, fmt.Errorf("get job definition %d: %w", monsterID, service.ErrJobTypeNotFound)
-	}
 
 	if taskDefinition.LevelRequirement > mon.Level() {
 		return -1, service.ErrLevelRequirementNotMet
