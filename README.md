@@ -80,8 +80,8 @@ migrate create -dir db/migrations -ext sql -seq -digits 4 {name}
 
 
 ## Next steps
-- multiple jobs
-- complex jobs with item consumption and cancellation
+- multiple jobs (done)
+- complex jobs with item consumption and cancellation (done)
+- master data in json files (done)
 - integration testing
-- master data in json files
 - elements to monsters and talents

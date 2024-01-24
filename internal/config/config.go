@@ -32,7 +32,7 @@ func Load() (Config, error) {
 	env := os.Getenv("ENVIRONMENT")
 
 	// read from stuff json
-	loader := configloader.NewFileLoader("/etc/config", "/etc/secrets")
+	loader := configloader.NewFileLoader("/etc/config")
 
 	mstrdata := masterdatacfg.LoadConfig()
 

@@ -1,0 +1,6 @@
+TRUNCATE jobs CASCADE;
+TRUNCATE users CASCADE;
+TRUNCATE monsters CASCADE;
+TRUNCATE gathering_jobs CASCADE;
+TRUNCATE inventory_items CASCADE;
+TRUNCATE job_monsters CASCADE;

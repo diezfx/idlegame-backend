@@ -14,12 +14,11 @@ const (
 
 type Loader struct {
 	Source
-	configPath  string
-	secretsPath string
+	configPath string
 }
 
-func NewFileLoader(configPath, secretsPath string) *Loader {
-	return &Loader{configPath: configPath, secretsPath: secretsPath}
+func NewFileLoader(configPath string) *Loader {
+	return &Loader{configPath: configPath, Source: FileSource}
 }
 
 func (c *Loader) LoadConfig(namespace string) ([]byte, error) {
@@ -29,13 +28,4 @@ func (c *Loader) LoadConfig(namespace string) ([]byte, error) {
 		return nil, fmt.Errorf("read config file %s: %w", path, err)
 	}
 	return content, nil
-}
-
-func (c *Loader) LoadSecret(namespace, key string) (string, error) {
-	path := fmt.Sprintf("%s/%s/%s", c.secretsPath, namespace, key)
-	content, err := os.ReadFile(path)
-	if err != nil {
-		return "", fmt.Errorf("read secret file %s: %w", path, err)
-	}
-	return string(content), nil
 }

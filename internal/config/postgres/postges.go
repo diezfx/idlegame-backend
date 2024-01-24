@@ -22,15 +22,5 @@ func LoadPostgresConfig(loader *configloader.Loader) (db.Config, error) {
 		return cfg, fmt.Errorf("unmarshal postgres: %w", err)
 	}
 
-	username, err := loader.LoadSecret(defaultNamespace, "username")
-	if err != nil {
-		return cfg, err
-	}
-	password, err := loader.LoadSecret(defaultNamespace, "password")
-	if err != nil {
-		return cfg, err
-	}
-	cfg.Username = username
-	cfg.Password = password
 	return cfg, nil
 }

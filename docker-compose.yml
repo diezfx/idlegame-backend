@@ -8,3 +8,17 @@ services:
       - POSTGRES_PASSWORD=postgres
     ports:
       - '5432:5432'
+
+
+  idlegame-backend:
+    build: 
+      context: .
+      dockerfile: deployment/Dockerfile
+    env_file:
+      - ./tests/integration/config/.env
+    depends_on:
+      - db
+    volumes:
+      - ./tests/integration/config:/etc/config
+    ports:
+      - '8080:8080'

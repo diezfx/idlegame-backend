@@ -4,7 +4,7 @@ fmt:
 	gofumpt -l -w .
 
 test:
-	go test ./... -v
+	go test ./... -v --tags=unit
 
 lint/download:
 	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b ./.bin $(GOLANG_CI_VERSION) 
