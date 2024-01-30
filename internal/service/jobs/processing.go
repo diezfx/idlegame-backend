@@ -68,7 +68,12 @@ func (s *JobService) UpdateProcessingJob(ctx context.Context, id int) error {
 	now := time.Now()
 	jobDefintion := s.masterdata.Jobs.GetProcessingJobDefinition(job.JobDefID)
 
-	executionCount := calculateTicks(job, jobDefintion.Duration.Duration(), now)
+	monster, err := s.monsterStorage.GetMonsterByID(ctx, job.Monsters[0])
+	if err != nil {
+		return fmt.Errorf("get monster information for monsterID %d: %w", job.Monsters[0], err)
+	}
+	duration := jobDefintion.Duration.Duration() / time.Duration(jobDefintion.GetAffinty(monster.Element()))
+	executionCount := calculateTicks(job, duration, now)
 
 	inventoryStr, err := s.inventoryStorage.GetInventory(ctx, job.UserID)
 	if err != nil {

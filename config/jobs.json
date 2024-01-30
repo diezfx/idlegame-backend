@@ -13,6 +13,12 @@
                     }
                 ],
                 "experience": 1
+            },
+            "affinity": {
+                "Fire": 0.5,
+                "Earth": 1.5,
+                "Water": 1,
+                "Air": 1
             }
         },
         {
@@ -103,6 +109,14 @@
                     }
                 ],
                 "experience": 1
+            },
+            "affinity": {
+                "elements": {
+                    "Fire": 0.5,
+                    "Earth": 3,
+                    "Water": 1,
+                    "Air": 1
+                }
             }
         },
         {

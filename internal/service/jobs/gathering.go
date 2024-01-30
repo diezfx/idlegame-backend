@@ -55,11 +55,13 @@ func (s *JobService) UpdateGatheringJob(ctx context.Context, id int) error {
 	now := time.Now()
 	jobDefintion := s.masterdata.Jobs.GetGatheringJobDefinition(job.JobDefID)
 
-	executionCount := calculateTicks(job, jobDefintion.Duration.Duration(), now)
-
 	monster, err := s.monsterStorage.GetMonsterByID(ctx, job.Monsters[0])
+	if err != nil {
+		return fmt.Errorf("get monster information for monsterID %d: %w", job.Monsters[0], err)
+	}
+	duration := jobDefintion.Duration.Duration() / time.Duration(jobDefintion.GetAffinty(monster.Element()))
 
-	executionCount = executionCount * int(jobDefintion.GetAffinty(monster.Element()))
+	executionCount := calculateTicks(job, duration, now)
 
 	rewards := calculateRewards(jobDefintion.Rewards, executionCount)
 
