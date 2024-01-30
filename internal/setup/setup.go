@@ -45,10 +45,9 @@ func SetupSplitService(ctx context.Context) (*http.Server, *jobs.Daemon, error) 
 	if err != nil {
 		return nil, nil, fmt.Errorf("create masterdata container: %w", err)
 	}
-
-	jobService := jobs.New(storageClient, storageClient, storageClient, masterdataContainer)
-	inventoryService := inventory.New(storageClient)
 	monsterService := monster.New(storageClient)
+	jobService := jobs.New(storageClient, monsterService, storageClient, masterdataContainer)
+	inventoryService := inventory.New(storageClient)
 
 	jobDaemon := jobs.NewDaemon(jobService)
 

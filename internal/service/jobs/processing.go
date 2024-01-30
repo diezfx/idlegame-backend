@@ -9,7 +9,6 @@ import (
 
 	"github.com/diezfx/idlegame-backend/internal/service"
 	"github.com/diezfx/idlegame-backend/internal/service/inventory"
-	"github.com/diezfx/idlegame-backend/internal/service/monster"
 	"github.com/diezfx/idlegame-backend/internal/storage"
 	"github.com/diezfx/idlegame-backend/pkg/logger"
 	"github.com/diezfx/idlegame-backend/pkg/masterdata"
@@ -27,14 +26,10 @@ func (s *JobService) StartProcessingJob(ctx context.Context, userID, monsterID i
 
 	// check if requirements are met
 
-	storeMon, err := s.monsterStorage.GetMonsterByID(ctx, monsterID)
-	if errors.Is(err, storage.ErrNotFound) {
-		return -1, fmt.Errorf("get job entry for %d: %w", monsterID, service.ErrMonsterNotFound)
-	}
+	mon, err := s.monsterStorage.GetMonsterByID(ctx, monsterID)
 	if err != nil {
 		return -1, fmt.Errorf("get monster information for monsterID %d: %w", monsterID, err)
 	}
-	mon := monster.MonsterFromStorage(storeMon)
 
 	taskDefinition := s.masterdata.Jobs.GetProcessingJobDefinition(jobDefID)
 	if taskDefinition == nil {

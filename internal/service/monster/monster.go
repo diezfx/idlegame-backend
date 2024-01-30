@@ -1,31 +1,9 @@
 package monster
 
-import "github.com/diezfx/idlegame-backend/internal/storage"
-
-type MonsterType string
-
-const (
-	FireType  MonsterType = "Fire"
-	WaterType MonsterType = "Water"
-	WindType  MonsterType = "Wind"
-	EarthType MonsterType = "Earth"
+import (
+	"github.com/diezfx/idlegame-backend/internal/storage"
+	"github.com/diezfx/idlegame-backend/pkg/masterdata"
 )
-
-func (t MonsterType) String() string {
-	return string(t)
-}
-
-var monList = map[int]MonsterDefinition{
-	1: {ID: 1, Name: "schiggo", Type: WaterType},
-	2: {ID: 2, Name: "bisa", Type: EarthType},
-	3: {ID: 3, Name: "glumander", Type: FireType},
-}
-
-type MonsterDefinition struct {
-	ID   int
-	Name string
-	Type MonsterType
-}
 
 type Monster struct {
 	ID           int
@@ -62,12 +40,12 @@ func (m *Monster) Level() int {
 	return 5
 }
 
-func (m *Monster) Type() MonsterType {
-	return monList[m.MonsterDefID].Type
+func (m *Monster) Element() masterdata.MonsterElement {
+	return masterdata.GetMonster(m.MonsterDefID).Element
 }
 
 func (m *Monster) Name() string {
-	return monList[m.MonsterDefID].Name
+	return masterdata.GetMonster(m.MonsterDefID).Name
 }
 
 func MonsterFromStorage(m *storage.Monster) *Monster {

@@ -16,11 +16,6 @@ type JobStorage interface {
 	GetJobs(ctx context.Context) ([]storage.Job, error)
 }
 
-type MonsterStorage interface {
-	GetMonsterByID(ctx context.Context, id int) (*storage.Monster, error)
-	AddMonsterExperience(ctx context.Context, userID int, exp int) (int, error)
-}
-
 type InventoryStorage interface {
 	AddItems(ctx context.Context, items []storage.InventoryEntry) error
 	GetItem(ctx context.Context, userID int, id string) (*storage.InventoryEntry, error)

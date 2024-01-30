@@ -47,7 +47,7 @@ func toMonster(m *monster.Monster) Monster {
 	return Monster{
 		ID:         m.ID,
 		Name:       m.Name(),
-		Type:       m.Type().String(),
+		Type:       m.Element().String(),
 		Level:      m.Level(),
 		Experience: m.Experience,
 	}

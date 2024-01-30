@@ -3,17 +3,17 @@
         {
             "id": 1,
             "name": "schiggo",
-            "type": "water"
+            "element": "Water"
         },
         {
             "id": 2,
             "name": "bisa",
-            "type": "earth"
+            "element": "Earth"
         },
         {
             "id": 3,
             "name": "glumander",
-            "type": "fire"
+            "element": "Fire"
         }
     ]
 }

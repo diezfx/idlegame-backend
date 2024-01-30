@@ -13,12 +13,12 @@ import (
 
 type JobService struct {
 	jobStorage       JobStorage
-	monsterStorage   MonsterStorage
+	monsterStorage   MonsterService
 	inventoryStorage InventoryStorage
 	masterdata       *masterdata.Container
 }
 
-func New(jobStorage JobStorage, monsterStorage MonsterStorage, inventoryStorage InventoryStorage, mdata *masterdata.Container) *JobService {
+func New(jobStorage JobStorage, monsterStorage MonsterService, inventoryStorage InventoryStorage, mdata *masterdata.Container) *JobService {
 	return &JobService{
 		jobStorage:       jobStorage,
 		monsterStorage:   monsterStorage,

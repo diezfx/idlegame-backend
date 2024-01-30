@@ -7,7 +7,7 @@ test:
 	go test ./... -v --tags=unit
 
 test/integration:
-	go test ./tests/integration/... -v --tags=integration
+	docker compose up --wait --build && go test ./tests/integration/... -v --tags=integration
 
 lint/download:
 	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b ./.bin $(GOLANG_CI_VERSION) 

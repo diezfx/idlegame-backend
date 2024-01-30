@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/diezfx/idlegame-backend/internal/service"
-	"github.com/diezfx/idlegame-backend/internal/service/monster"
 	"github.com/diezfx/idlegame-backend/internal/storage"
 	"github.com/diezfx/idlegame-backend/pkg/masterdata"
 )
@@ -30,15 +29,10 @@ func (s *JobService) StartGatheringJob(ctx context.Context, userID, monsterID in
 
 	// check if requirements are met
 
-	storeMon, err := s.monsterStorage.GetMonsterByID(ctx, monsterID)
-	if errors.Is(err, storage.ErrNotFound) {
-		return -1, fmt.Errorf("get job entry for %d: %w", monsterID, service.ErrMonsterNotFound)
-	}
+	mon, err := s.monsterStorage.GetMonsterByID(ctx, monsterID)
 	if err != nil {
 		return -1, fmt.Errorf("get monster information for monsterID %d: %w", monsterID, err)
 	}
-	mon := monster.MonsterFromStorage(storeMon)
-
 	if taskDefinition.LevelRequirement > mon.Level() {
 		return -1, service.ErrLevelRequirementNotMet
 	}
@@ -62,6 +56,10 @@ func (s *JobService) UpdateGatheringJob(ctx context.Context, id int) error {
 	jobDefintion := s.masterdata.Jobs.GetGatheringJobDefinition(job.JobDefID)
 
 	executionCount := calculateTicks(job, jobDefintion.Duration.Duration(), now)
+
+	monster, err := s.monsterStorage.GetMonsterByID(ctx, job.Monsters[0])
+
+	executionCount = executionCount * int(jobDefintion.GetAffinty(monster.Element()))
 
 	rewards := calculateRewards(jobDefintion.Rewards, executionCount)
 

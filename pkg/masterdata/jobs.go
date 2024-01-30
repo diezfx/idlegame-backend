@@ -10,6 +10,12 @@ type Job struct {
 	LevelRequirement int               `json:"levelRequirement"`
 	Duration         duration.Duration `json:"duration"`
 	Rewards          Reward            `json:"rewards"`
+	Affinity         Affinity          `json:"affinity"`
+}
+
+// specific element types may be better at some job; this adds a multiplicator. Can be used to reduce time or increase rewards
+type Affinity struct {
+	Elements map[MonsterElement]float64 `json:"elements"`
 }
 
 func (t JobType) String() string {
@@ -62,4 +68,11 @@ type Recipes struct {
 type ItemWithQuantity struct {
 	ID       string `json:"id"`
 	Quantity int    `json:"quantity"`
+}
+
+func (j *Job) GetAffinty(element MonsterElement) float64 {
+	if affinity, ok := j.Affinity.Elements[element]; ok {
+		return affinity
+	}
+	return 1
 }

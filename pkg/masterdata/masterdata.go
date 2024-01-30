@@ -54,6 +54,7 @@ func New(cfg Config) (*Container, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal monsters: %w", err)
 	}
+	monsterContainer = monsters
 
 	return &Container{
 		Monsters: monsters,
