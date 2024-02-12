@@ -9,24 +9,27 @@ import (
 	"github.com/diezfx/idlegame-backend/internal/config"
 	"github.com/diezfx/idlegame-backend/internal/service"
 	"github.com/diezfx/idlegame-backend/pkg/logger"
+	"github.com/diezfx/idlegame-backend/pkg/masterdata"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 type APIHandler struct {
-	jobService       JobService
-	inventoryService InventoryService
-	monsterService   MonsterService
+	jobService          JobService
+	inventoryService    InventoryService
+	monsterService      MonsterService
+	masterdataContainer *masterdata.Container
 }
 
-func newAPIHandler(jobService JobService, inventoryService InventoryService, monsterService MonsterService) *APIHandler {
+func newAPIHandler(masterdataContainer *masterdata.Container, jobService JobService, inventoryService InventoryService, monsterService MonsterService) *APIHandler {
 	return &APIHandler{
-		jobService:       jobService,
-		inventoryService: inventoryService,
-		monsterService:   monsterService}
+		masterdataContainer: masterdataContainer,
+		jobService:          jobService,
+		inventoryService:    inventoryService,
+		monsterService:      monsterService}
 }
 
-func InitAPI(cfg *config.Config, jobService JobService, inventoryService InventoryService, monsterService MonsterService) *http.Server {
+func InitAPI(cfg *config.Config, masterdataContainer *masterdata.Container, jobService JobService, inventoryService InventoryService, monsterService MonsterService) *http.Server {
 	mr := gin.New()
 	mr.Use(gin.Recovery())
 	mr.Use(logger.HTTPLoggingMiddleware())
@@ -45,8 +48,14 @@ func InitAPI(cfg *config.Config, jobService JobService, inventoryService Invento
 			r.Use(auth.AuthMiddleware(cfg.Auth))
 		}
 	*/
+
 	// jobHandlers
-	api := newAPIHandler(jobService, inventoryService, monsterService)
+	api := newAPIHandler(masterdataContainer, jobService, inventoryService, monsterService)
+
+	// master data handlers
+	masterDataRouter := mr.Group("/masterdata")
+	masterDataRouter.GET("/map", api.GetMap)
+	masterDataRouter.GET("/jobs/:type", api.GetJobMasterdata)
 
 	r.GET("/monsters/:id", api.GetMonster)
 	r.GET("/jobs/:id", api.GetJob)
@@ -110,6 +119,24 @@ func (api *APIHandler) DeleteJob(ctx *gin.Context) {
 	ctx.Status(http.StatusNoContent)
 }
 
+func (api *APIHandler) GetJobMasterdata(ctx *gin.Context) {
+	typeStr := ctx.Param("type")
+	if typeStr == "" {
+		handleError(ctx, errInvalidInput)
+		return
+	}
+	if typeStr == "gathering" {
+		ctx.JSON(http.StatusOK, api.masterdataContainer.Jobs.GatheringJobs)
+		return
+	}
+	if typeStr == "processing" {
+		ctx.JSON(http.StatusOK, api.masterdataContainer.Jobs.ProcessingJobs)
+		return
+	}
+
+	handleError(ctx, errInvalidInput)
+}
+
 func (api *APIHandler) GetInventory(ctx *gin.Context) {
 	userIDStr := ctx.Param("userID")
 	userID, err := strconv.Atoi(userIDStr)
@@ -138,6 +165,10 @@ func (api *APIHandler) GetMonster(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, toMonster(resp))
+}
+
+func (api *APIHandler) GetMap(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, api.masterdataContainer.Map)
 }
 
 func handleError(ctx *gin.Context, err error) {

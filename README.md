@@ -66,18 +66,32 @@ migrate create -dir db/migrations -ext sql -seq -digits 4 {name}
 - Collect exp by doing a job(monster get stronger)
 
 
-## Traveling
+## World map
+
+- Generate a worldmap
+    - everyone in same places
+    - generate new place for every player?
+
+### Traveling
 - different places, which allow collecting of different stuff
 - flying mounts help shorten time(endurance)
 - non global market stuff can still be bought but with a delivery fee
+
+
+
+
+## How to get new ones?
+- Breeding
+- Special Bosses/Quests?
+
+# Stamina system
+- need food to work
+
 
 ## Future
 - battles for cities
 - market place
 - chat based on matrix
-
-
-
 
 ## Next steps
 - multiple jobs (done)
@@ -85,4 +99,5 @@ migrate create -dir db/migrations -ext sql -seq -digits 4 {name}
 - master data in json files (done)
 - integration testing (done)
 - elements to monsters (done)
-- talents for monsters  
+- talents for monsters
+- equipment (e.g. food, weapons, ...)

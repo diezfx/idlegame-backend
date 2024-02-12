@@ -51,7 +51,7 @@ func SetupSplitService(ctx context.Context) (*http.Server, *jobs.Daemon, error) 
 
 	jobDaemon := jobs.NewDaemon(jobService)
 
-	router := api.InitAPI(&cfg, jobService, inventoryService, monsterService)
+	router := api.InitAPI(&cfg, masterdataContainer, jobService, inventoryService, monsterService)
 
 	srv := &http.Server{
 		Handler: router.Handler,

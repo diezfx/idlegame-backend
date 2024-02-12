@@ -11,10 +11,13 @@ type Container struct {
 	Monsters MonsterContainer
 	Jobs     JobContainer
 	Items    ItemContainer
+	Map      *Map
 }
 
 type Config struct {
-	Path string
+	Path      string
+	AssetPath string
+	MapPath   string
 }
 
 func New(cfg Config) (*Container, error) {
@@ -56,9 +59,15 @@ func New(cfg Config) (*Container, error) {
 	}
 	monsterContainer = monsters
 
+	maps, err := LoadMap(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("load map: %w", err)
+	}
+
 	return &Container{
 		Monsters: monsters,
 		Jobs:     jobs,
 		Items:    items,
+		Map:      maps,
 	}, nil
 }

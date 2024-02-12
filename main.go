@@ -1,42 +1,23 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"log"
+	"os"
 
-	"github.com/diezfx/idlegame-backend/internal/config"
-	"github.com/diezfx/idlegame-backend/internal/storage"
-	"github.com/diezfx/idlegame-backend/pkg/db"
+	"github.com/lafriks/go-tiled"
 )
 
 func main() {
-	ctx := context.Background()
-
-	cfg, err := config.Load()
+	const mapPath = "assets/map.tmx"
+	gameMap, err := tiled.LoadFile(mapPath)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("error parsing map: %s", err.Error())
+		os.Exit(2)
 	}
 
-	psqlClient, err := db.New(cfg.DB)
-	if err != nil {
-		log.Fatal(err)
+	for _, tile := range gameMap.Tilesets[0].Tiles {
+		fmt.Println(tile.Properties.GetString("Type"))
 	}
 
-	store, err := storage.New(ctx, psqlClient)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	res, err := store.GetJobByMonster(ctx, 2)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%+v", res)
-
-	res2, err := store.GetJobByID(ctx, 1)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%+v", res2)
+	fmt.Println(gameMap)
 }
